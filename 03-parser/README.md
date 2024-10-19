@@ -8,11 +8,16 @@
 - Înainte de parcurgerea exercițiilor, citiți cu atenție scheletul de
   cod. Pentru fiecare exercițiu, găsiți în cod explicații și sugestii
   de implementare. Umăriți marcajele **`TODO x`** unde `x` este
-  numărul exercițiului. Sursele de interes sunt **`CPLangParser.g4`**
-  și **`Test.java`**.
+  numărul exercițiului. Sursele de interes sunt
+  **`parser/CPLangParser.g4`** și **`Test.java`**.
 
 ## Ex. 1. Specificația sintactică a limbajului CPLang
 
+- Generarea analizorului sintactic presupune prezența fișierului
+  **`CPLangLexer.tokens`** (generat de ANTLR pentru analiza lexicală)
+  lângă **`parser/CPLangParser.g4`** .  Generați fișierele
+  analizorului lexical, apoi copiați **`lexer/CPLangLexer.tokens`** în
+  directorul **`parser/`**.
 - Completați gramatica din fișierul **`CPLangParser.g4`**, urmărind
   marcajele **`TODO 1`**, astfel încât să puteți analiza programe
   CPLang. Pentru a testa o anumită regulă sintactică, faceți click
@@ -21,7 +26,7 @@
   în panoul din dreapta puteți vizualiza arborele de derivare.
 - În final, urmariți marcajele **`TODO 1`** din **`Test.java`**.
 - În metoda **`main`** se decomentează metoda corespunzătoare
-  exercițiului.  Fișierul de intrare este `manual.txt`.
+  exercițiului.  Fișierul de intrare este **`manual.txt`**.
 
 ## Ex. 2. Evaluator de expresii aritmetice
 
@@ -31,8 +36,8 @@
   `+-*/`. **Atenție** la ordinea obișnuită a operațiilor!
 - Urmăriți marcajele **`TODO 2`** din **`Test.java`**.
 - Pentru testare, decomentați linia corespunzătoare în `main`.
-  Fișierul de intrare este `input2.txt`, iar referința este
-  `reference2.txt`.
+  Fișierul de intrare este **`input2.txt`**, iar referința este
+  **`reference2.txt`**.
 
 Exemplu de intrare:
 
