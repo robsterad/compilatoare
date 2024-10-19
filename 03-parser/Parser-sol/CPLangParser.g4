@@ -79,8 +79,8 @@ formal
 expr
     :   name=ID LPAREN (args+=expr (COMMA args+=expr)*)? RPAREN     # call
     |   MINUS e=expr                                                # unaryMinus
-    |   left=expr op=(MULT | DIV) right=expr                        # multDiv
-    |   left=expr op=(PLUS | MINUS) right=expr                      # plusMinus
+    |   left=expr op=(MULT | DIV) right=expr                        # arithmetic
+    |   left=expr op=(PLUS | MINUS) right=expr                      # arithmetic
     |   left=expr op=(LT | LE | EQUAL) right=expr                   # relational
     |   IF cond=expr THEN thenBranch=expr ELSE elseBranch=expr FI   # if
     |   FOR init=expr COMMA cond=expr COMMA step=expr DO body=expr  # for
