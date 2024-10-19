@@ -15,11 +15,11 @@ Iată un prim exemplu de program scris în CPLang:
 Int x;
 Int y = x;
 
-Int inc(Int x) { x + 1 };
+Int inc(Int x) { x + 1; };
 x = inc(y);
 
 print_float(mult(x, y));  // utilizare mult inainte de definire
-Float mult(Float x, Float y) { x + y * 2.5 };
+Float mult(Float x, Float y) { x + y * 2.5; };
 
 Bool b = x == x;
 print_bool(b);
