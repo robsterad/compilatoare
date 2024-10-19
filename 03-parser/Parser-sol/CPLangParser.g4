@@ -14,29 +14,40 @@ options {
 prog
     :   ((definition | expr) SEMI)* EOF
     ;
-   
-/* TODO 1 Adaugă regula pentru definițiile de variabile
+
+/* TODO 1: Adaugă regula pentru definiții (variable și funcții). */
 /* Există definiții pentru variabile (opțional cu inițializare):
  * -> type name (= expr)?
- * și definiții pentru funcții:
+ *  și definiții pentru funcții:
  * -> type name (type name_formal1, type name_formal2, ..) { expr }.
  */
-definition:
-	;
-	
+definition
+    :   type=TYPE name=ID (ASSIGN init=expr)?   # varDef
+    |   type=TYPE name=ID LPAREN (formals+=formal (COMMA formals+=formal)*)? RPAREN
+            body=block                          # funcDef
+    ;
+
+formal
+    :   type=TYPE name=ID
+    ;
+
 /* Expresie.
  * O expresie poate fi:
  * -> apel de funcție;
  * -> operator unar: -expr
  *		-x+y se va evalua la (-x) + y, nu la -(x + y) !!!
- * -> operație aritmetică: *, / , +, -;
- *		-> operație relațională: <, <=, ==
- *		!!!Operatorii relaționali au prioritate mai mică decât cei    (2+3)<=5
- *		aritmetici;
- * -> instructiunea if;
+ * -> operație aritmetică: *, /, +, -;
+ * -> operație relațională: <, <=, ==
+ *    !!! Operatorii relaționali au prioritate mai mică decât cei aritmetici,
+ *    !!! expresia 2+3<=5 fiind echivalentă cu (2+3)<=5.
+ * -> instrucțiunea if;
+ * -> instrucțiunea for;
  * -> atribuire de variabilă;
- * -> expresie parantezată.
- * 
+ * -> identificator;
+ * -> literal (int, float sau bool);
+ * -> expresie parantezată;
+ * -> bloc.
+ *
  * În absența numelor din dreapta, precedate de # (if, id și int), în listenerii
  * și visitorii generați automat, ar fi definit doar contextul ExprContext, cu
  * informații amestecate pentru toate cele trei alternative. Însă, în prezența
@@ -62,10 +73,28 @@ definition:
  * din arbore.
  * 
  * TODO 1: Completează gramatica pentru regulile de mai sus.
- * Nu uita si de restul literalilor.
  */
 expr
-    :	IF cond=expr THEN thenBranch=expr ELSE elseBranch=expr FI	# if
-    |	ID                                                          # id
-    |	INT                                                         # int
+    :   name=ID LPAREN (args+=expr (COMMA args+=expr)*)? RPAREN     # call
+    |   MINUS e=expr                                                # unaryMinus
+    |   left=expr op=(MULT | DIV) right=expr                        # multDiv
+    |   left=expr op=(PLUS | MINUS) right=expr                      # plusMinus
+    |   left=expr op=(LT | LE | EQUAL) right=expr                   # relational
+    |   IF cond=expr THEN thenBranch=expr ELSE elseBranch=expr FI   # if
+    |   FOR init=expr COMMA cond=expr COMMA step=expr DO body=expr  # for
+    |   name=ID ASSIGN e=expr                                       # assign
+    |   ID                                                          # id
+    |   INT                                                         # int
+    |   FLOAT                                                       # float
+    |   BOOL                                                        # bool
+    |   LPAREN e=expr RPAREN                                        # paren
+    |   block                                                       # blockExpr
+    ;
+
+local
+    :   type=TYPE name=ID (ASSIGN init=expr)?
+    ;
+
+block
+    :   LBRACE ((local | expr) SEMI)* expr SEMI RBRACE  // Cel puțin o expresie la sfârșit de bloc.
     ;
