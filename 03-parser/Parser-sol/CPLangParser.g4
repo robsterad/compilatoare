@@ -15,11 +15,13 @@ prog
     :   ((definition | expr) SEMI)* EOF
     ;
 
-/* TODO 1: Adaugă regula pentru definiții (variable și funcții). */
-/* Există definiții pentru variabile (opțional cu inițializare):
- * -> type name (= expr)?
- *  și definiții pentru funcții:
- * -> type name (type name_formal1, type name_formal2, ..) { expr }.
+/* TODO 1: Adaugă regula pentru definiții (variable și funcții).
+ *
+ * Există:
+ * -> definiții pentru variabile (opțional cu inițializare):
+ *      type name (= expr)?
+ * -> definiții pentru funcții:
+ *      type name (type name_formal1, type name_formal2, ..) block
  */
 definition
     :   type=TYPE name=ID (ASSIGN init=expr)?   # varDef
@@ -48,12 +50,12 @@ formal
  * -> expresie parantezată;
  * -> bloc.
  *
- * În absența numelor din dreapta, precedate de # (if, id și int), în listenerii
- * și visitorii generați automat, ar fi definit doar contextul ExprContext, cu
- * informații amestecate pentru toate cele trei alternative. Însă, în prezența
- * celor trei etichete, care diferențiază alternativele, vor fi generate și
- * cele trei contexte particulare, IfContext, IdContext și IntContext, cu
- * informații specifice fiecărei alternative.
+ * În absența numelor din dreapta, precedate de # (să zicem `if`, `id` și `int`),
+ * în listenerii și visitorii generați automat ar fi definit doar contextul
+ * ExprContext, cu informații amestecate pentru toate cele trei alternative.
+ * Însă, în prezența celor trei etichete, care diferențiază alternativele, vor
+ * fi generate și cele trei contexte particulare, IfContext, IdContext și
+ * IntContext, cu informații specifice fiecărei alternative.
  * 
  * Pentru fiecare dintre regulile lexicale sau sintactice referite într-o regulă
  * sintactică, obiectul Context va conține o funcție cu numele regulii. Spre

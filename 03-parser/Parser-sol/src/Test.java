@@ -1,13 +1,16 @@
-import java.io.IOException;
-import java.util.*;
-import java.io.File;
-
-import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Scanner;
 
 
 public class Test {
-    /* Variable pentru contorizarea definițiilor de variabile și funcții */
+    // Variabile pentru contorizarea definițiilor de variabile și funcții.
     public static int varDefs = 0;
     public static int funcDefs = 0;
 
@@ -17,9 +20,8 @@ public class Test {
         var lexer = new CPLangLexer(input);
         var tokenStream = new CommonTokenStream(lexer);
 
-        /* Decomentează pentru a afișa mulțimea de tokeni generată
-         * după analiza lexicală pe fișierul de intrare:
-         **/
+        // Decomentează pentru a afișa mulțimea de tokeni generată
+        // după analiza lexicală pe fișierul de intrare:
 
 		/*
 		tokenStream.fill();
@@ -27,7 +29,7 @@ public class Test {
 		for (var token : tokens) {
 		    var text = token.getText();
 		    var type = CPLangLexer.VOCABULARY.getSymbolicName(token.getType());
-		    
+
 		    System.out.println(text + " : " + type);
 		}
 		*/
@@ -35,13 +37,12 @@ public class Test {
         return new CPLangParser(tokenStream);
     }
 
-    public static void task12() throws IOException {
-        /* Fișierul manual.txt conține un program CPLang.
-         * Fișierul reference1-2.txt poate fi folosit ca referință.
-         **/
+    public static void task1() throws IOException {
+        // Fișierul manual.txt conține un program CPLang.
+        // Fișierul reference1.txt poate fi folosit ca referință.
         var parser = readFromFile("manual.txt");
 
-        /* TODO 1 înlocuiește expr cu regula de start din gramatică */
+        /* TODO 1: înlocuiește expr cu regula de start din gramatică. */
         var tree = parser.prog();
         System.out.println(tree.toStringTree(parser));
 
@@ -57,23 +58,23 @@ public class Test {
         // constă în faptul că este parcurs întregul arbore de derivare, chiar
         // dacă pe noi ne intesează doar anumite noduri particulare.
         var listener = new CPLangParserBaseListener() {
-            /* TODO 2
-             * Suprascrie metodele din Listener pentru a contoriza numărul
-             * de definiții de variabile, atât globale cât și ca parametri
-             * formali ai unor funcții și, separat, numărul
-             * de definiții de funcții.
-             * !!! Variabilele folosite pentru contori sunt varDefs și funcDefs.
+            /* TODO 2: Suprascrie metodele din Listener pentru a contoriza
+             *  numărul de definiții de variabile, atât globale cât și ca
+             *  parametri formali ai unor funcții și, separat, numărul de
+             *  definiții de funcții. Variabilele folosite pentru contori
+             *  sunt varDefs și funcDefs.
              *
-             * HINT: Uită-te în clasa CPLangParserBaseListener
-             * la metodele exit<ETICHETA>, unde eticheta corespunde unei
-             * reguli din gramatică. Trebuie să suprascrii cele 3 metode.
+             * HINT: Uită-te în clasa CPLangParserBaseListener la metodele
+             * exit<ETICHETA>, unde eticheta corespunde unei reguli din
+             * gramatică. Trebuie să suprascrii cele 3 metode.
              */
             @Override
             public void exitVarDef(CPLangParser.VarDefContext ctx) {
                 varDefs += 1;
             }
 
-            @Override public void exitLocal(CPLangParser.LocalContext ctx) {
+            @Override
+            public void exitLocal(CPLangParser.LocalContext ctx) {
                 varDefs += 1;
             }
 
@@ -83,8 +84,9 @@ public class Test {
             }
         };
 
-        // Un walker realizează o parcurgere în adâncime a arborelui de
-        // derivare, invocând la momentul potrivit metodele enter/exit.
+        /* Un walker realizează o parcurgere în adâncime a arborelui de
+         * derivare, invocând la momentul potrivit metodele enter/exit.
+         **/
         var walker = new ParseTreeWalker();
         walker.walk(listener, tree);
 
@@ -95,49 +97,45 @@ public class Test {
         System.out.println("Definitii de functii: " + funcDefs);
     }
 
-    public static void task3() throws IOException {
-        /* Fișierul input3.txt conține un program CPLang restricționat,
-         * fără definiții, fără referiri la variabile sau funcții.
-         * Conține o serie de instrucțiuni aritmetice, doar pentru literali
-         * întregi.
-         * Fișierul reference3.txt continue output-ul corespunzător.
-         **/
-        var parser = readFromFile("input3.txt");
+    public static void task2() throws IOException {
+        // Fișierul input2.txt conține un program CPLang restricționat,
+        // fără definiții, fără referiri la variabile sau funcții.
+        // Conține o serie de instrucțiuni aritmetice, doar pentru literali
+        // întregi.
+        //
+        // Fișierul reference2.txt conține output-ul corespunzător.
+        var parser = readFromFile("input2.txt");
 
-        /* TODO 3 înlocuiește expr cu regula de start */
-        var tree = parser.expr();
+        // TODO 2: înlocuiește `expr` cu regula de start.
+        var tree = parser.prog();
 
-        Scanner s = new Scanner(new File("reference3.txt"));
-        ArrayList<Integer> reference = new ArrayList<Integer>();
+        Scanner s = new Scanner(new File("reference2.txt"));
+        ArrayList<Integer> reference = new ArrayList<>();
         while (s.hasNextLine()) {
             reference.add(Integer.parseInt(s.nextLine()));
         }
         s.close();
 
-        /* Interfața CPLangParserVisitor conține câte o metodă pentru
-         * fiecare alternativă etichetată. Spre exemplu, pentru eticheta mul,
-         * avem metoda T visitMul(MulContext).
-         * Clasa CPLangParserBaseVisitor<T> oferă implementări implicite
-         * ale acestor metode, a.i noi să putem supradefini doar metodele
-         * de interes.
-         *
-         * De remarcat că, spre deosebire de listeners, metodele de vizitare
-         * pot întoarce și o valoare utilă, care poate fi interpretată
-         * recursiv. Acest lucru, alături de faptul că putem vizita doar
-         * nodurile de interes pentru noi, constituie avantajul vizitatorilor.
-         * Dezavantajul constă în faptul că este necesară vizitarea explicită
-         * a copiilor, mai ales când trebuie să parcurgem întregul arbore.
-         *
-         * Pentru acest task, fiecare metodă visit va întoarce un Integer.
-         *
-         * TODO 3
-         * Pentru acest task, programele CPLang vor conține doar
-         * expresii aritmetice cu literali numerici, fără definiții sau
-         * referiri la variabile!!!
-         * Pentru rezolvare, trebuie suprascrise metodele visit, doar pentru
-         * etichetele corespunzatoare literalilor si operatiilor aritmetice.
-         * Ignoram restul.
-         **/
+        // Interfața CPLangParserVisitor conține câte o metodă pentru
+        // fiecare alternativă etichetată. Spre exemplu, pentru eticheta mul,
+        // avem metoda T visitMul(MulContext).
+        // Clasa CPLangParserBaseVisitor<T> oferă implementări implicite
+        // ale acestor metode, a.î. noi să putem supradefini doar metodele
+        // de interes.
+        //
+        // De remarcat că, spre deosebire de listeners, metodele de vizitare
+        // pot întoarce și o valoare utilă, care poate fi interpretată
+        // recursiv. Acest lucru, alături de faptul că putem vizita doar
+        // nodurile de interes pentru noi, constituie avantajul vizitatorilor.
+        // Dezavantajul constă în faptul că este necesară vizitarea explicită
+        // a copiilor, mai ales când trebuie să parcurgem întregul arbore.
+        //
+        // TODO 2: Pentru acest exercițiu, programele CPLang vor conține doar
+        //  expresii aritmetice cu literali numerici, fără definiții sau
+        //  referiri la variabile!!!
+        //  Pentru rezolvare trebuie suprascrise metodele visit, doar pentru
+        //  etichetele corespunzătoare literalilor, operațiilor aritmetice și
+        //  expresiilor parantezate. Fiecare metodă va întoarce un Integer.
         var visitor = new CPLangParserBaseVisitor<Integer>() {
             @Override
             public Integer visitProg(CPLangParser.ProgContext ctx) {
@@ -146,7 +144,7 @@ public class Test {
                     Integer res = visit(expr);
                     System.out.println(expr.getText() + " = " + res);
                     var ref_res = reference.get(index++);
-                    if (res != ref_res) {
+                    if (!Objects.equals(res, ref_res)) {
                         System.err.println("Your result : " + res +
                                 " is different than " + ref_res);
                     }
@@ -155,17 +153,58 @@ public class Test {
                 return 0;
             }
 
-            /* TODO 3 Suprascrie visit<eticheta> unde eticheta corespunde
-             * operațiilor aritmetice, operațiilor parantezate, minus-unar și
-             * literalilor întregi */
+            // TODO 2: Suprascrie visit<etichetă> unde eticheta corespunde
+            //  literalilor întregi, operației minus-unar, operațiilor aritmetice
+            //  binare și operațiilor parantezate.
+
+            @Override
+            public Integer visitInt(CPLangParser.IntContext ctx) {
+                return Integer.parseInt(ctx.getText());
+            }
+
+            @Override
+            public Integer visitUnaryMinus(CPLangParser.UnaryMinusContext ctx) {
+                return -visit(ctx.expr());
+            }
+
+            @Override
+            public Integer visitMultDiv(CPLangParser.MultDivContext ctx) {
+                Integer left = visit(ctx.left);
+                Integer right = visit(ctx.right);
+                String op = ctx.op.getText();
+                if (op.equals("*")) {
+                    return left * right;
+                } else {
+                    return left / right;
+                }
+            }
+
+            @Override
+            public Integer visitPlusMinus(CPLangParser.PlusMinusContext ctx) {
+                Integer left = visit(ctx.left);
+                Integer right = visit(ctx.right);
+                String op = ctx.op.getText();
+                if (op.equals("+")) {
+                    return left + right;
+                } else {
+                    return left - right;
+                }
+            }
+
+            @Override
+            public Integer visitParen(CPLangParser.ParenContext ctx) {
+                return visit(ctx.expr());
+            }
         };
 
         visitor.visit(tree);
     }
 
     public static void main(String[] args) throws IOException {
-        task12();
+        // TODO 1: decomentați pentru a testa exercițiul 1.
+        task1();
 
-//        task3();
+        // TODO 2: decomentați pentru a testa exercițiul 2.
+        // task2();
     }
 };
