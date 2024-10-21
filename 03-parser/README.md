@@ -18,11 +18,14 @@
   lângă **`parser/CPLangParser.g4`** .  Generați fișierele
   analizorului lexical, apoi copiați **`lexer/CPLangLexer.tokens`** în
   directorul **`parser/`**.
+- De asemenea, pentru a putea folosi funcția `Test Rule`, copiați
+  **`lexer/CPLangLexer.g4`** în directorul **`parser/`**.
+
 - Completați gramatica din fișierul **`CPLangParser.g4`**, urmărind
   marcajele **`TODO 1`**, astfel încât să puteți analiza programe
   CPLang. Pentru a testa o anumită regulă sintactică, faceți click
   dreapta pe numele regulii în specificație și selectați `Test
-  rule`. În panoul din stânga puteți introduce un șir de analizat, iar
+  Rule`. În panoul din stânga puteți introduce un șir de analizat, iar
   în panoul din dreapta puteți vizualiza arborele de derivare.
 - În final, urmariți marcajele **`TODO 1`** din **`Test.java`**.
 - În metoda **`main`** se decomentează metoda corespunzătoare
