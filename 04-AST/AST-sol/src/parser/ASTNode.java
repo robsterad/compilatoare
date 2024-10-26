@@ -150,58 +150,11 @@ class Relational extends Expression {
     }
 }
 
-// Pentru un PlusMinus avem 'op=(PLUS | MINUS)' ca reprezentare
-class Plus extends Expression {
+class Arithmetic extends Expression {
     Expression left;
     Expression right;
 
-    Plus(Expression left, Expression right, Token op) {
-        super(op);
-        this.left = left;
-        this.right = right;
-    }
-
-    public <T> T accept(ASTVisitor<T> visitor) {
-        return visitor.visit(this);
-    }
-}
-
-class Minus extends Expression {
-    Expression left;
-    Expression right;
-
-    Minus(Expression left, Expression right, Token op) {
-        super(op);
-        this.left = left;
-        this.right = right;
-    }
-
-    public <T> T accept(ASTVisitor<T> visitor) {
-        return visitor.visit(this);
-    }
-}
-
-// Pentru un MultDiv avem 'op=(MULT | DIV)' ca reprezentare
-class Mult extends Expression {
-    Expression left;
-    Expression right;
-
-    Mult(Expression left, Expression right, Token op) {
-        super(op);
-        this.left = left;
-        this.right = right;
-    }
-
-    public <T> T accept(ASTVisitor<T> visitor) {
-        return visitor.visit(this);
-    }
-}
-
-class Div extends Expression {
-    Expression left;
-    Expression right;
-
-    Div(Expression left, Expression right, Token op) {
+    Arithmetic(Expression left, Expression right, Token op) {
         super(op);
         this.left = left;
         this.right = right;

@@ -60,42 +60,11 @@ public class PrintVisitor implements ASTVisitor<Void> {
     }
 
     @Override
-    public Void visit(Plus plus) {
-        printIndent("+");
+    public Void visit(Arithmetic arithmetic) {
+        printIndent(arithmetic.getToken().getText());
         indent++;
-        plus.left.accept(this);
-        plus.right.accept(this);
-        indent--;
-
-        return null;
-    }
-
-    @Override
-    public Void visit(Minus minus) {
-        printIndent("-");
-        indent++;
-        minus.left.accept(this);
-        minus.right.accept(this);
-        indent--;
-        return null;
-    }
-
-    @Override
-    public Void visit(Mult mult) {
-        printIndent("*");
-        indent++;
-        mult.left.accept(this);
-        mult.right.accept(this);
-        indent--;
-        return null;
-    }
-
-    @Override
-    public Void visit(Div div) {
-        printIndent("/");
-        indent++;
-        div.left.accept(this);
-        div.right.accept(this);
+        arithmetic.left.accept(this);
+        arithmetic.right.accept(this);
         indent--;
         return null;
     }
@@ -112,7 +81,7 @@ public class PrintVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(GlobalVarDef globalVarDef) {
-        printIndent("Global");
+        printIndent("GlobalVarDef");
         indent++;
         globalVarDef.type.accept(this);
         globalVarDef.id.accept(this);
@@ -174,7 +143,7 @@ public class PrintVisitor implements ASTVisitor<Void> {
 
     @Override
     public Void visit(LocalVarDef localVarDef) {
-        printIndent("Local");
+        printIndent("LocalVarDef");
         indent++;
         localVarDef.type.accept(this);
         localVarDef.id.accept(this);

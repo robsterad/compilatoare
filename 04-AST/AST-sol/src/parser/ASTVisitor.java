@@ -7,10 +7,7 @@ public interface ASTVisitor<T> {
     T visit(FloatLiteral floaty);
     T visit(BoolLiteral boolLiteral);
     T visit(UnaryMinus uMinus);
-    T visit(Plus plus);
-    T visit(Minus minus);
-    T visit(Mult mult);
-    T visit(Div div);
+    T visit(Arithmetic arithmetic);
     T visit(Assign assign);
     T visit(GlobalVarDef globalVarDef);
     T visit(FuncDef funcDef);

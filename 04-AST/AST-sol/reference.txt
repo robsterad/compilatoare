@@ -1,7 +1,7 @@
-Global
+GlobalVarDef
 	TYPE Int
 	ID x
-Global
+GlobalVarDef
 	TYPE Int
 	ID y
 	ID x
@@ -41,7 +41,7 @@ FuncDef
 			*
 				ID y
 				FLOAT 2.5
-Global
+GlobalVarDef
 	TYPE Bool
 	ID b
 	==
@@ -66,11 +66,11 @@ FuncDef
 		TYPE Int
 		ID n
 	Block
-		Local
+		LocalVarDef
 			TYPE Int
 			ID p
 			INT 1
-		Local
+		LocalVarDef
 			TYPE Int
 			ID i
 		For

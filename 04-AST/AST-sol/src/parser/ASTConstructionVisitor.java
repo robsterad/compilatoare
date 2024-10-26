@@ -56,21 +56,9 @@ public class ASTConstructionVisitor extends CPLangParserBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitArithmetic(CPLangParser.ArithmeticContext ctx) {
-        return switch (ctx.op.getType()) {
-            case CPLangParser.PLUS -> new Plus((Expression)visit(ctx.left),
-                    (Expression)visit(ctx.right),
-                    ctx.op);
-            case CPLangParser.MINUS -> new Minus((Expression)visit(ctx.left),
-                    (Expression)visit(ctx.right),
-                    ctx.op);
-            case CPLangParser.MULT -> new Mult((Expression)visit(ctx.left),
-                    (Expression)visit(ctx.right),
-                    ctx.op);
-            case CPLangParser.DIV -> new Div((Expression)visit(ctx.left),
-                    (Expression)visit(ctx.right),
-                    ctx.op);
-            default -> null;
-        };
+        return new Arithmetic((Expression)visit(ctx.left),
+                (Expression)visit(ctx.right),
+                ctx.op);
     }
 
     @Override
