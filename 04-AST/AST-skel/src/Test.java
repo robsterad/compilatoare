@@ -25,7 +25,7 @@ public class Test {
         */
 
         var parser = new CPLangParser(tokenStream);
-        // change the start rule to be prog when testing a complete CPLang program
+        // schimbati regula de start in "prog" pentru a testa un program CPLang complet
         var tree = parser.expr();
         System.out.println(tree.toStringTree(parser));
 
