@@ -124,15 +124,13 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTNode.LocalVarDef localVarDef) {
 
-        processVarStructure(localVarDef);
-        return null;
+        return processVarStructure(localVarDef.id, localVarDef.initValue, false);
     }
 
     @Override
     public Void visit(ASTNode.GlobalVarDef globalVarDef) {
 
-        processVarStructure(globalVarDef);
-        return null;
+        return processVarStructure(globalVarDef.id, globalVarDef.initValue, true);
     }
 
     @Override
@@ -145,14 +143,15 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         // și să îl restaurati la loc după ce acesta a fost parcurs.
         var id = funcDef.id;
         var functionSymbol = new FunctionSymbol(currentScope, id.getToken().getText());
-        currentScope = functionSymbol;
 
         // TODO 3: Verificăm faptul că o funcție cu același nume nu a mai fost
         // definită până acum.
-        if (!currentScope.getParent().add(functionSymbol)) {
+        if (!currentScope.add(functionSymbol)) {
             ASTVisitor.error(id.getToken(), id.getToken().getText() + " function redefined");
             return null;
         }
+
+        currentScope = functionSymbol;
 
         id.setSymbol(functionSymbol);
         id.setScope(currentScope);
@@ -192,50 +191,27 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         return null;
     }
 
-    Void processVarStructure(ASTNode var) {
+    Void processVarStructure(ASTNode.Id id, ASTNode.Expression initValue, boolean globalFlag) {
+        // TODO 2: La definirea unei variabile, creăm un nou simbol.
+        // Adăugăm simbolul în domeniul de vizibilitate curent.
+        // Atașăm simbolul nodului din arbore.
 
-        if (var instanceof ASTNode.LocalVarDef) {
-            // TODO 2: La definirea unei variabile, creăm un nou simbol.
-            // Adăugăm simbolul în domeniul de vizibilitate curent.
-            // Atașăm simbolul nodului din arbore.
+        var symbol = new IdSymbol(id.getToken().getText());
+        symbol.isGlobal = globalFlag;
 
-            var id = ((ASTNode.LocalVarDef) var).id;
-            var symbol = new IdSymbol(id.getToken().getText());
-
-            if (!currentScope.add(symbol)) {
-                ASTVisitor.error(id.getToken(), id.getToken().getText() + " redefined");
-                return null;
-            }
-
-            id.setSymbol(symbol);
-
-            if (((ASTNode.LocalVarDef) var).initValue != null) {
-                ((ASTNode.LocalVarDef) var).initValue.accept(this);
-            }
-
-        } else if (var instanceof ASTNode.GlobalVarDef) {
-            // TODO 2: La definirea unei variabile, creăm un nou simbol.
-            // Adăugăm simbolul în domeniul de vizibilitate curent.
-            // Atașăm simbolul nodului din arbore.
-            // Marcăm simbolul ca fiind global
-
-            var id = ((ASTNode.GlobalVarDef) var).id;
-
-            var symbol = new IdSymbol(id.getToken().getText());
-            symbol.isGlobal = true;
-
-            // TODO 3: Semnalăm eroare dacă există deja variabilă în scope-ul
-            // curent.
-            if (!currentScope.add(symbol)) {
-                ASTVisitor.error(id.getToken(), id.getToken().getText() + " redefined");
-                return null;
-            }
-
-            id.setSymbol(symbol);
-
-            if (((ASTNode.GlobalVarDef) var).initValue != null) ((ASTNode.GlobalVarDef) var).initValue.accept(this);
-
+        // TODO 3: Semnalăm eroare dacă există deja variabilă în scope-ul
+        // curent.
+        if (!currentScope.add(symbol)) {
+            ASTVisitor.error(id.getToken(), id.getToken().getText() + " redefined");
+            return null;
         }
+
+        id.setSymbol(symbol);
+
+        if (initValue != null)
+            initValue.accept(this);
+
         return null;
     }
+
 }

@@ -115,15 +115,13 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTNode.LocalVarDef localVarDef) {
 
-        processVarStructure(localVarDef);
-        return null;
+        return processVarStructure(localVarDef.id, localVarDef.initValue, false);
     }
 
     @Override
     public Void visit(ASTNode.GlobalVarDef globalVarDef) {
 
-        processVarStructure(globalVarDef);
-        return null;
+        return processVarStructure(globalVarDef.id, globalVarDef.initValue, true);
     }
 
     @Override
@@ -168,31 +166,17 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         return null;
     }
 
-    Void processVarStructure(ASTNode var) {
+    Void processVarStructure(ASTNode.Id id, ASTNode.Expression initValue, boolean globalFlag) {
+        // TODO 2: La definirea unei variabile, creăm un nou simbol.
+        // Adăugăm simbolul în domeniul de vizibilitate curent.
+        // Atașăm simbolul nodului din arbore.
 
-        if (var instanceof ASTNode.LocalVarDef) {
-            // TODO 2: La definirea unei variabile, creăm un nou simbol.
-            // Adăugăm simbolul în domeniul de vizibilitate curent.
-            // Atașăm simbolul nodului din arbore.
+        // TODO 3: Semnalăm eroare dacă există deja variabilă în scope-ul
+        // curent.
 
+        if (initValue != null)
+            initValue.accept(this);
 
-            if (((ASTNode.LocalVarDef) var).initValue != null) {
-                ((ASTNode.LocalVarDef) var).initValue.accept(this);
-            }
-
-        } else if (var instanceof ASTNode.GlobalVarDef) {
-            // TODO 2: La definirea unei variabile, creăm un nou simbol.
-            // Adăugăm simbolul în domeniul de vizibilitate curent.
-            // Atașăm simbolul nodului din arbore.
-            // Marcăm simbolul ca fiind global
-
-
-            // TODO 3: Semnalăm eroare dacă există deja variabilă în scope-ul
-            // curent.
-
-            if (((ASTNode.GlobalVarDef) var).initValue != null) ((ASTNode.GlobalVarDef) var).initValue.accept(this);
-
-        }
         return null;
     }
 }

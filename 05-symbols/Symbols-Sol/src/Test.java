@@ -3,6 +3,7 @@ import java.io.IOException;
 import org.antlr.v4.runtime.*;
 import semantic.*;
 import parser.*;
+import lexer.*;
 
 public class Test {
 
@@ -10,7 +11,7 @@ public class Test {
         /*
          TODO 3: Schimbați la bad_input.txt.
          */
-        var input = CharStreams.fromFileName("manual.txt");
+        var input = CharStreams.fromFileName("bad_input.txt");
 
         var lexer = new CPLangLexer(input);
         var tokenStream = new CommonTokenStream(lexer);
