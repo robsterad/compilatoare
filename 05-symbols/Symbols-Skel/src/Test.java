@@ -3,6 +3,7 @@ import java.io.IOException;
 import org.antlr.v4.runtime.*;
 import semantic.*;
 import parser.*;
+import lexer.*;
 
 public class Test {
 
@@ -68,6 +69,5 @@ public class Test {
         ast.accept(definitionPassVisitor);
         ast.accept(resolutionPassVisitor);
     }
-
 
 }
