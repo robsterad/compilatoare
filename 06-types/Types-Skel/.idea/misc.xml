@@ -17,7 +17,7 @@
           <option name="fileName" value="$PROJECT_DIR$/src/parser/CPLangParser.g4" />
           <option name="autoGen" value="true" />
           <option name="outputDir" value="src" />
-          <option name="libDir" value="src\lexer" />
+          <option name="libDir" value="src/lexer" />
           <option name="encoding" value="" />
           <option name="pkg" value="" />
           <option name="language" value="" />
