@@ -124,14 +124,14 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         var id = funcDef.id;
         var type = funcDef.type;
         var functionSymbol = new FunctionSymbol(currentScope, id.getToken().getText());
-        currentScope = functionSymbol;
 
         // Verificăm faptul că o funcție cu același nume nu a mai fost
         // definită până acum.
-        if (!currentScope.getParent().add(functionSymbol)) {
+        if (!currentScope.add(functionSymbol)) {
             ASTVisitor.error(id.getToken(), id.getToken().getText() + " function redefined");
             return null;
         }
+        currentScope = functionSymbol;
 
         id.setSymbol(functionSymbol);
         id.setScope(currentScope);
