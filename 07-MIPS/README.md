@@ -8,7 +8,7 @@ MIPS este o arhitectură **RISC**, pe **32 de biți**. Alegerea unei arhitecturi
 
 În [manualul SPIM](https://curs.upb.ro/2023/mod/resource/view.php?id=18816), la pagina A-23 găsiți descrierea **registrelor** arhitecturii MIPS, iar la paginile A-48–A-49, lista **apelurilor de sistem**. În continuare, prezentăm câteva elemente utile pentru rezolvarea laboratorului.
 
-Vom executa programele MIPS în cadrul **[simulatorului SPIM](https://sourceforge.net/projects/spimsimulator/)** (cu varianta vizuală QtSpim).
+Vom executa programele MIPS în cadrul [simulatorului SPIM](https://sourceforge.net/projects/spimsimulator/) (cu varianta vizuală QtSpim).
 
 * De fiecare dată când modificați programul, va trebui să îl **reîncărcați** prin comanda `Reinitialize and load file` (al doilea buton de pe toolbar).
 * **Rularea** propriu-zisă se realizează prin comanda `Run/Continue`.
@@ -18,7 +18,7 @@ Vom executa programele MIPS în cadrul **[simulatorului SPIM](https://sourceforg
 
 ## Structura unui program și câteva instrucțiuni utile
 
-Un program MIPS conține o zonă de **date** și o zonă de **cod**. Zona de cod trebuie să conțină eticheta **`main:`**, de unde va începe execuția programului. La final, trebuie **încheiată explicit** execuția programului, prin apelul de sistem `exit`, pentru că altfel contorul de program va fi incrementat în continuu, până la întâlnirea unei erori sau a unei instrucțiuni invalide.
+Un program MIPS conține o zonă de **date** (marcată cu `.data`) și o zonă de **cod** (marcată cu `.text`). Zona de cod trebuie să conțină eticheta **`main:`**, de unde va începe execuția programului. La final, trebuie **încheiată explicit** execuția programului, prin apelul de sistem `exit`, pentru că altfel contorul de program va fi incrementat în continuu, până la întâlnirea unei erori sau a unei instrucțiuni invalide.
 
 Programul de mai jos definește trei etichete în zona de date, unde depune un întreg (32 de biți), o secvență de 5 întregi, respectiv un șir de caractere terminat cu caracterul nul (de aici `z`(`ero`) din directiva `.asciiz`). În final, invocă apelul de sistem `exit`, încărcând codul acestuia (10) în registrul `$v0` și executând apoi instrucțiunea `syscall`. Instrucțiunea `li` (*load immediate*) se utilizează pentru a încărca literali întregi în registre.
 
@@ -137,7 +137,7 @@ while(i > 0)
 
 ### Stack-pointer
 
-Încărcați pe stivă numerele între 20 la 1. Apoi, afișați-le folosind o nouă buclă, ce scoate numerele de pe stivă în timp ce le afișează.
+Încărcați pe stivă numerele de la 20 la 1. Apoi, afișați-le folosind o nouă buclă, ce scoate numerele de pe stivă în timp ce le afișează. Numerele trebuie afișate în ordine de la 20 la 1.
 
 ### Hailstone sequence
 
