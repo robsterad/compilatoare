@@ -22,31 +22,41 @@ Convențiile folosite sunt cele detaliate la curs între **slide-urile 281–296
 
 ### Task 1
 
-Definiți *template*-urile în fișierul `cgen.stg`, și instanțiați-le în visitor-ul `CodeGenVisitor` pentru tipurile de valori **imediate** și operatorul **minus unar**. Urmăriți comentariile `TODO 1`.
+Definiți *template*-urile în fișierul `asmgen.stg`, și instanțiați-le în visitor-ul `AsmGenVisitor` pentru tipurile de valori **imediate**, operatorul **minus unar** și **blocuri**. Urmăriți comentariile `TODO 1`.
 
 ### Task 2
 
 Completați *template*-urile și metodele `visit` pentru **operațiile binare** (aritmetice și relaționale). Tratați cazurile atât pentru numere întregi, cât și floating point ([detalii](https://www.doc.ic.ac.uk/lab/secondyear/spim/node20.html)). De reținut că, pentru operațiile floating point, acumulatorul ar trebui implementat prin registrul `$f0`, în loc de `$a0`, iar operațiile de tip `Int <op> Float` ar trebui să conducă la generarea unor instrucțiuni explicite de conversie (vedeți `cvt.s.w`) ale operandului `Int` la `Float`. Urmăriți comentariile `TODO 2`.
 
-Definițiile de *template*-uri pot deveni rapid lungi și repetitive. Căutați o soluție în [*cheatsheet*-ul `StringTemplate`](https://github.com/antlr/stringtemplate4/blob/master/doc/cheatsheet.md) pentru a **reduce numărul de linii de cod** din `cgen.stg`.
+Definițiile de *template*-uri pot deveni rapid lungi și repetitive. Căutați o soluție în [*cheatsheet*-ul `StringTemplate`](https://github.com/antlr/stringtemplate4/blob/master/doc/cheatsheet.md) pentru a **reduce numărul de linii de cod** din `asmgen.stg`.
 
 ### Task 3
 
-Completați *template*-urile și metodele `visit` pentru construcțiile **`If`** și **`Call`**. Urmăriți comentariile `TODO 3` și **respectați convențiile prezentate la curs**.
+Completați *template*-urile și metodele `visit` pentru construcția ***if*** și pentru **apelurile de funcție**. Urmăriți comentariile `TODO 3` și **respectați convențiile prezentate la curs**.
 
-Adăugați un mecanism prin care mai multe construcții `If` să genereze **etichete diferite**. Pentru construcția `Call`, definiți *template*-ul astfel încât să se poată genera apeluri cu **oricâți parametri**.
+Adăugați un mecanism prin care mai multe construcții *if* să genereze **etichete diferite**. Pentru apelurile de funcție, definiți *template*-ul astfel încât să se poată genera apeluri cu **oricâți parametri**.
 
 ### Task 4
 
-Completați construcțiile aferente pentru **`Assign`** și **`VarDef`**. Urmăriți comentariile cu `TODO 4`.
+Completați construcțiile aferente pentru **definiții de variabile globale**, **definiții de variabile locale**, **atribuiri** și **blocuri**. Urmăriți comentariile `TODO 4`.
 
 În cazul **definițiilor de variabile globale** va trebui înregistrat numele variabilei în secțiunea `.data`; pentru aceasta, utilizați `ST`-ul `dataSection`. Dacă declarația conține și **expresia de inițializare**, se va adăuga codul aferent în `main`. Pentru definirea valorilor cu tipul `Bool` sau `Int` folosiți `.word 0`, iar pentru cele cu tipul `Float`, `.float 0.0`.
 
+În cazul **definițiilor de variabile locale**, puteți rezerva spațiu pentru acestea pe stivă, la un *offset* negativ față de *frame pointer* (-4, -8 etc.).
+
+În cadrul **blocurilor**, este util să țineți evidența următorului *offset* disponibil pe stivă pentru variabile locale, ținând cont și de blocurile imbricate. Mai precis, la ieșirea dintr-un bloc, pozițiile utilizate de variabilele locale definite în interiorul acestuia devin disponibile.
+
+Pentru a reține informația de locație a unei variabile, îmbogățiți definiția **simbolurilor** (de exemplu, cu numele etichetei sau cu *offset*-ul față de *frame pointer*).
+
 ### Task 5
 
-Completați construcțiile aferente pentru **definițiile de funcții** și **referirile la variabile** (globale sau parametri formali). Urmăriți convenția prezentată la curs, și comentariile `TODO 5` din `CodeGenVisitor` și `IdSymbol`.
+Completați construcțiile aferente pentru **definițiile de funcții** și **referirile la variabile** (globale, locale sau parametri formali). Urmăriți convenția prezentată la curs, și comentariile `TODO 5` din `AsmGenVisitor` și `IdSymbol`.
 
-Variabilele globale vor fi accesate pe baza **etichetei** omonime din zona de date, iar parametrii formali, relativ la ***frame pointer*** (`$fp`). Pentru a distinge între cele două situații, îmbogățiți definiția simbolurilor cu informația necesară (de exemplu, numele etichetei sau *offset*-ul față de *frame pointer*).
+Variabilele globale vor fi accesate pe baza **etichetei** omonime din zona de date, iar parametrii formali și variabilele locale, relativ la ***frame pointer*** (`$fp`).
+
+### Task 6
+
+Completați intrările aferente construcției `for`. Urmăriți comentariile `TODO 6`.
 
 ### Bonus
 
