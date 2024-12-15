@@ -131,7 +131,6 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
             ASTVisitor.error(id.getToken(), id.getToken().getText() + " function redefined");
             return null;
         }
-
         currentScope = functionSymbol;
 
         id.setSymbol(functionSymbol);
@@ -140,10 +139,23 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         // TODO 1: Reținem informația de tip în simbolul nou creat.
 
         // Căutăm tipul funcției.
+        Symbol typeSymbol = currentScope.lookup(type.getToken().getText());
 
         // Semnalăm eroare dacă nu există.
+        // NOTE: Această verificare nu este strict necesară pentru CPLang, deoarece din definiția token-ului
+        // CPLangParser.TYPE se garantează că avem un tip valid.
+        if (typeSymbol == null) {
+            ASTVisitor.error(type.getToken(), "Type " + type.getToken().getText() + " is not defined");
+            return null;
+        }
+
+        if (!(typeSymbol instanceof TypeSymbol)) {
+            ASTVisitor.error(type.getToken(), type.getToken().getText() + " is not a type");
+            return null;
+        }
 
         // Reținem informația de tip în cadrul simbolului aferent funcției.
+        functionSymbol.setType((TypeSymbol) typeSymbol);
 
         for (var formal : funcDef.formalDefs) {
             formal.accept(this);
@@ -201,11 +213,24 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         // TODO 1: Reținem informația de tip în simbolul nou creat.
 
         // Căutăm tipul variabilei.
+        Symbol typeSymbol = currentScope.lookup(type.getToken().getText());
 
         // Semnalăm eroare dacă nu există.
+        // NOTE: Această verificare nu este strict necesară pentru CPLang, deoarece din definiția token-ului
+        // CPLangParser.TYPE se garantează că avem un tip valid.
+        if (typeSymbol == null) {
+            ASTVisitor.error(type.getToken(), "Type " + type.getToken().getText() + " is not defined");
+            return null;
+        }
+
+        if (!(typeSymbol instanceof TypeSymbol)) {
+            ASTVisitor.error(type.getToken(), type.getToken().getText() + " is not a type");
+            return null;
+        }
 
         // Reținem informația de tip în cadrul simbolului aferent
         // variabilei
+        symbol.setType((TypeSymbol) typeSymbol);
 
         if (initValue != null) {
             initValue.accept(this);
