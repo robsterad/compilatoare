@@ -6,8 +6,9 @@
 1. Analiză sintactică 2 - Arbori de sintaxă abstractă (AST)
 1. Analiză semantică 1 - Rezolvarea simbolurilor
 1. Analiză semantică 2 - Verificarea tipurilor
-1. Arhitectura MIPS
-1. Generare de cod
+1. Generare cod țintă 1 - Arhitectura MIPS
+1. Generare cod țintă 2, 3 - Traducerea construcțiilor de nivel înalt
+1. Optimizări 1 - Cod intermediar. Numerotarea valorilor
 
 Scheletele conțin porțiuni de cod adaptate din:
 
