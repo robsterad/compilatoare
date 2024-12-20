@@ -1,0 +1,313 @@
+// Helper templates for sequence generation
+sequence(e) ::= "<e; separator=\"\n\">"          // Basic sequence with newline separation
+sequenceSpaced(e) ::= "<e; separator=\"\n\n\">"  // Sequence with extra spacing
+
+// Main program structure
+program(data, textFuncs, textMain) ::= <<
+.data
+<data>
+newline: .asciiz "\n"
+true_str: .asciiz "true"
+false_str: .asciiz "false"
+
+.text
+<textFuncs>
+print_int:
+    addiu $sp $sp -8
+    sw $fp 8($sp)
+    sw $ra 4($sp)
+    addiu $fp $sp 4
+
+    lw $a0 8($fp)
+    li $v0 1
+    syscall
+
+    la $a0 newline
+    li $v0 4
+    syscall
+
+    lw $fp 8($sp)
+    lw $ra 4($sp)
+    addiu $sp $sp 12
+    jr $ra
+
+print_float:
+    addiu $sp $sp -8
+    sw $fp 8($sp)
+    sw $ra 4($sp)
+    addiu $fp $sp 4
+
+    mov.s $f12 $f0
+    l.s $f0 8($fp)
+    li $v0 2
+    syscall
+
+    la $a0 newline
+    li $v0 4
+    syscall
+
+    lw $fp 8($sp)
+    lw $ra 4($sp)
+    addiu $sp $sp 12
+    jr $ra
+
+print_bool:
+    addiu $sp $sp -8
+    sw $fp 8($sp)
+    sw $ra 4($sp)
+    addiu $fp $sp 4
+
+    lw $a0 8($fp)
+    move $t0 $a0
+    beqz $t0 print_false
+
+    la $a0 true_str
+    j print_bool_end
+
+print_false:
+    la $a0 false_str
+
+print_bool_end:
+    li $v0 4
+    syscall
+    la $a0 newline
+    syscall
+
+    lw $fp 8($sp)
+    lw $ra 4($sp)
+    addiu $sp $sp 12
+    jr $ra
+
+main:
+<textMain>
+	li $v0, 10
+	syscall		# exit
+>>
+
+// Basic value templates
+literal(value) ::= <<              # For integer literals
+    li $a0 <value>
+>>
+
+floatLiteral(value) ::= <<         # For float literals
+   li.s $f0 <value>
+>>
+
+boolLiteral(value) ::= <<          # For boolean literals
+   li $a0 <if(value)>1<else>0<endif>
+>>
+
+// Operation templates
+unaryMinus(e, dStr) ::= <<         # For negating integers
+<e>
+   neg $a0 $a0          <if(dStr)># <dStr><endif>
+>>
+
+unaryMinusFloat(e, dStr) ::= <<
+<e>
+   neg.s $f0 $f0        <if(dStr)># <dStr><endif>
+>>
+
+// Binary operation templates
+binaryOp(e1, e2, op, leftIsInt, dStr) ::= <<    # For integer operations
+<e1>
+   sw $a0 0($sp)        # Save first operand
+   addiu $sp $sp -4     # Adjust stack pointer
+<e2>                    # Evaluate second operand
+   lw $t1 4($sp)        # Restore first operand
+   <op> $a0 $t1 $a0     # Perform operation
+   addiu $sp $sp 4      # Restore stack pointer
+>>
+
+floatBinaryOp(e1, e2, op, leftIsInt, dStr) ::= <<
+<e1>
+   s.s $f0 0($sp)      # Save first operand
+   addiu $sp $sp -4    # Adjust stack pointer
+<e2>
+   l.s $f1 4($sp)      # Restore first operand
+   <op>.s $f0 $f1 $f0  # Perform operation
+   addiu $sp $sp 4     # Restore stack pointer <if(dStr)># <dStr><endif>
+>>
+
+mixedBinaryOp(e1, e2, op, leftIsInt, dStr) ::= <<
+<e1>
+<if(leftIsInt)>
+   mtc1 $a0 $f1        # Convert integer to float
+   cvt.s.w $f1 $f1     # Convert word to single precision
+   s.s $f1 0($sp)
+<else>
+   s.s $f0 0($sp)
+<endif>
+   addiu $sp $sp -4
+<e2>
+<if(!leftIsInt)>
+   mtc1 $a0 $f1        # Convert integer to float
+   cvt.s.w $f1 $f1     # Convert word to single precision
+<endif>
+   l.s $f2 4($sp)
+   <op>.s $f0 $f2 <if(leftIsInt)>$f0<else>$f1<endif>
+   addiu $sp $sp 4       <if(dStr)># <dStr><endif>
+>>
+
+comparison(e1, e2, op, leftIsInt, label, dStr) ::= <<
+<e1>
+   sw $a0 0($sp)             # Save first operand
+   addiu $sp $sp -4          # Adjust stack pointer
+<e2>
+   lw $t1 4($sp)             # Load first operand
+   b<op> $t1 $a0 comp_L<label>  # Branch if comparison true
+   li $a0 0                  # Set result to false
+   j exit_comp_L<label>      # Skip true case
+comp_L<label>:
+   li $a0 1                  # Set result to true
+exit_comp_L<label>:
+   addiu $sp $sp 4          # Restore stack pointer
+>>
+
+floatComparison(e1, e2, op, leftIsInt, label, dStr) ::= <<
+<e1>
+   s.s $f0 0($sp)
+   addiu $sp $sp -4
+<e2>
+   l.s $f1 4($sp)
+   c.<op>.s $f1 $f0
+   bc1f comp_L<label>
+   li $a0 1
+   j exit_comp_L<label>
+comp_L<label>:
+   li $a0 0
+exit_comp_L<label>:
+   addiu $sp $sp 4          <if(dStr)># <dStr><endif>
+>>
+
+mixedComparison(e1, e2, op, leftIsInt, label, dStr) ::= <<
+<e1>
+<if(leftIsInt)>
+   mtc1 $a0 $f1        # Convert integer to float
+   cvt.s.w $f1 $f1     # Convert word to single precision
+   s.s $f1 0($sp)
+<else>
+   s.s $f0 0($sp)
+<endif>
+   addiu $sp $sp -4
+<e2>
+<if(!leftIsInt)>
+   mtc1 $a0 $f1        # Convert integer to float
+   cvt.s.w $f1 $f1     # Convert word to single precision
+<endif>
+   l.s $f2 4($sp)
+   c.<op>.s <if(leftIsInt)>$f2 $f0<else>$f2 $f1<endif>
+   li $a0 0
+   bc1f exit_comp_L<label>
+   li $a0 1
+exit_comp_L<label>:
+   addiu $sp $sp 4          <if(dStr)># <dStr><endif>
+>>
+
+// Control flow templates
+if(cond, thenBranch, elseBranch, label, dStr) ::= <<    # If statement template
+<cond>
+   beqz $a0 else_L<label>          # Branch if condition is false
+<thenBranch>
+   j exit_if_L<label>              # Skip else branch
+else_L<label>:
+<elseBranch>
+exit_if_L<label>:
+>>
+
+functionCall(name, args, dStr) ::= <<
+    <args>
+    jal <name>              <if(dStr)># <dStr><endif>
+>>
+
+int_bool_arg(expr) ::= <<
+<expr>
+	sw $a0 0($sp)
+    addiu $sp $sp -4
+>>
+
+float_arg(expr) ::= <<
+<expr>
+	s.s $f0 0($sp)
+    addiu $sp $sp -4
+>>
+
+globalVarDef(name, is_float) ::= <<
+<name>: .<if(is_float)>float 0.0<else>word 0<endif>
+>>
+
+int_bool_assign(expr, location, dStr) ::= <<
+<expr>
+    sw $a0 <location>
+>>
+
+float_assign(expr, location, dStr) ::= <<
+<expr>
+    s.s $f0 <location>
+>>
+
+int_bool_localVarDef(expr, offset, dStr) ::= <<
+<expr>
+    sw $a0 <offset>($fp)
+>>
+
+float_localVarDef(expr, offset, dStr) ::= <<
+<expr>
+    s.s $f0 <offset>($fp)
+>>
+
+int_bool_globalId(address) ::= <<
+    lw $a0, <address>
+>>
+
+float_globalId(address) ::= <<
+    l.s $f0, <address>
+>>
+
+int_bool_localId(offset) ::= <<
+    lw $a0 <offset>($fp)
+>>
+
+float_localId(offset) ::= <<
+    l.s $f0 <offset>($fp)
+>>
+
+// Function related templates
+functionDef(name, body, local_offset, dStr) ::= <<    # Function definition template
+<name>:
+   	# Set up stack frame
+   	addiu $sp $sp -8
+   	sw $fp 8($sp)
+   	sw $ra 4($sp)
+   	addiu $fp $sp 4
+<body>
+   	# Clean up stack frame
+    lw $fp 8($sp)
+	lw $ra 4($sp)
+	addiu $sp $sp <local_offset>
+	jr $ra
+>>
+
+block_setup(frame_size, return_offset, frame_offset, dStr) ::= <<
+subu $sp, $sp, <frame_size>    # Allocate space for new frame
+sw $ra, <return_offset>($sp)   # Save return address
+sw $fp, <frame_offset>($sp)    # Save old frame pointer
+move $fp, $sp                  # Set up new frame pointer
+>>
+
+block_cleanup(frame_size, return_offset, frame_offset, dStr) ::= <<
+lw $ra, <return_offset>($fp)   # Restore return address
+lw $fp, <frame_offset>($fp)    # Restore old frame pointer
+addu $sp, $sp, <frame_size>    # Deallocate frame
+>>
+
+forLoop(init, cond, step, body, label, dStr) ::= <<
+<init>                         # Initialize loop variable
+start_for_L<label>:           # Loop start label
+<cond>                        # Evaluate condition
+   beqz $a0 exit_for_L<label> # Exit if condition is false
+<body>                        # Loop body
+<step>                        # Increment/step
+   j start_for_L<label>       # Jump back to start
+exit_for_L<label>:           # Loop exit label
+>>
