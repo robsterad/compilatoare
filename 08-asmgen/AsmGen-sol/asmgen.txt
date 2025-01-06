@@ -1,0 +1,187 @@
+/*
+ * Advanced CPLang Test Program
+ *
+ * This program demonstrates complex interactions between recursive functions,
+ * global state, and mathematical computations. It consists of three main functions:
+ * 1. geometricSeries - Computes sum of geometric series with ratio 1/2
+ * 2. recursiveFactorial - Calculates factorial with side effects on global state
+ * 3. computeMetric - Combines the above in a complex computation
+ *
+ * Expected Output Sequence is documented step by step below.
+ */
+
+// Global state initialization
+Int globalState;
+globalState = 100;      // Starting value for tracking program state
+Float multiplier;
+multiplier = 1.5;       // Used in calculations
+Bool systemEnabled;
+systemEnabled = true;   // Control flag
+
+/*
+ * Function: geometricSeries
+ * Input example: terms = 3
+ * Process: Calculates 1 + 1/2 + 1/4
+ * Expected output sequence for terms = 3:
+ * 1. print_float(1.0)    // First term
+ * 2. print_float(0.5)    // Second term
+ * 3. print_float(0.25)   // Third term
+ * 4. print_float(1.75)   // Final sum
+ */
+Float geometricSeries(Int terms) {
+    Float sum;
+    Float currentTerm;
+    Int i;
+
+    sum = 0.0;
+    currentTerm = 1.0;
+
+    for i = 0, i < terms, i = i + 1 do {
+        sum = sum + currentTerm;
+        print_float(currentTerm);     // Shows each term of the series
+        currentTerm = currentTerm / 2.0;
+    };
+
+    print_float(sum);                 // Shows final sum
+    sum;
+};
+
+/*
+ * Function: recursiveFactorial
+ * Input example: n = 3
+ * Process: Calculates 3! while decrementing globalState
+ * Expected output sequence for n = 3:
+ * 1. print_int(3)        // Initial call
+ * 2. print_int(2)        // First recursive call
+ * 3. print_int(1)        // Second recursive call
+ * 4. print_int(99)       // globalState after decrement
+ * 5. print_int(2)        // 2! result
+ * 6. print_int(6)        // 3! final result
+ */
+Int recursiveFactorial(Int n) {
+    Int result;
+    print_int(n);                     // Shows current number being processed
+
+    if n <= 1 then {
+        globalState = globalState - 1;
+        print_int(globalState);       // Shows decremented global state
+        result = 1;
+    } else {
+        Int subResult;
+        subResult = recursiveFactorial(n - 1);
+        result = n * subResult;
+        print_int(result);            // Shows factorial result
+    } fi;
+
+    result;
+};
+
+/*
+ * Function: computeMetric
+ * Input example: base = 4, factor = 2.5
+ * Process: Combines geometric series and factorial calculations
+ * Expected output sequence:
+ * 1. First phase - geometric series computation
+ *    - Outputs from geometricSeries(3) as described above
+ *    - print_float(result) showing series * factor
+ * 2. Second phase - factorial computations for i = 1 to base
+ *    For each iteration:
+ *    - Outputs from recursiveFactorial(i)
+ *    - print_float(result) showing accumulated/reduced result
+ *    - print_bool(shouldContinue) showing continuation status
+ */
+Float computeMetric(Int base, Float factor) {
+    Float result;
+    Int i;
+    Bool shouldContinue;
+
+    result = 0.0;
+    shouldContinue = true;
+
+    // First phase - geometric series calculation
+    {
+        Float seriesResult;
+        seriesResult = geometricSeries(3);
+        result = seriesResult * factor;
+        print_float(result);          // Shows initial result after series
+    };
+
+    // Second phase - factorial-based calculations
+    for i = 1, i <= base, i = i + 1 do {
+        if shouldContinue then {
+            Int factResult;
+            factResult = recursiveFactorial(i);
+
+            if factResult <= 10 then {
+                result = result + factResult * factor;
+                print_float(result);   // Shows accumulated result
+            } else {
+                result = result + factResult / 2.0;
+                print_float(result);   // Shows reduced result
+            } fi;
+
+            shouldContinue = result <= 100.0;
+        } else {
+            result = result - 1.0;
+            print_float(result);       // Shows decremented result
+        } fi;
+
+        print_bool(shouldContinue);    // Shows iteration status
+    };
+
+    result;
+};
+
+/*
+ * Main Test Sequence
+ * Expected complete output sequence:
+ * 1. Initial state
+ *    - print_bool(true)              // systemEnabled
+ *    - print_int(100)                // initial globalState
+ *
+ * 2. First computation (computeMetric(4, 2.5))
+ *    - All outputs from computeMetric as described above
+ *    - print_float(result1)          // First computation result
+ *
+ * 3. Second computation
+ *    - Outputs from recursiveFactorial(3) for baseValue
+ *    - All outputs from computeMetric(baseValue, 1.75)
+ *    - print_float(result2)          // Second computation result
+ *
+ * 4. Final results
+ *    - If result1 <= result2:
+ *      print_float(result2 * 2.0)    // Doubled result
+ *    - Else: print_int(-1)
+ *
+ * 5. Final state verification
+ *    - print_int(globalState)        // Final global state
+ *    - print_bool(systemEnabled)     // Final system status
+ */
+{
+    print_bool(systemEnabled);
+    print_int(globalState);
+
+    {
+        Float result1;
+        Float result2;
+        Int baseValue;
+
+        result1 = computeMetric(4, 2.5);
+        print_float(result1);
+
+        baseValue = recursiveFactorial(3);
+        result2 = computeMetric(baseValue, 1.75);
+        print_float(result2);
+
+        if result1 <= result2 then {
+            Float finalValue;
+            finalValue = result2 * 2.0;
+            print_float(finalValue);
+        } else {
+            print_int(-1);
+        } fi;
+    };
+};
+
+print_int(globalState);
+print_bool(systemEnabled);
