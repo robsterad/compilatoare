@@ -122,7 +122,7 @@ Mai precis, numerotarea globală a valorilor decurge conform unei parcurgeri în
 
 Detaliile implementării se găsesc în schelet.
 
-Să vedem cu decurge o iterație pentru numerotarea globală a valorilor pe CFG-ul din exemplu:
+Să vedem cum decurge o iterație pentru numerotarea globală a valorilor pe CFG-ul din exemplu:
 
 ![SSA-GVN](media/f-SSA-GVN.svg)
 
