@@ -9,6 +9,7 @@
 1. Generare cod țintă 1 - Arhitectura MIPS
 1. Generare cod țintă 2, 3 - Traducerea construcțiilor de nivel înalt
 1. Optimizări 1 - Cod intermediar. Numerotarea valorilor
+1. Optimizări 2 - Numerotarea globală a valorilor. Eliminarea codului neexecutabil
 
 Scheletele conțin porțiuni de cod adaptate din:
 
