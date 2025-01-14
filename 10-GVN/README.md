@@ -166,5 +166,5 @@ Acesta conține încă instrucțiuni inutile, care ar putea fi eliminate (de exe
 ## Cerințe
 
 1. Extindeți **numerotarea valorilor** dintr-un bloc cu tratamentul **instrucțiunilor ϕ**, completând metoda `process(BasicBlock)` din clasa `GlobalValueNumbering` din pachetul `optim`.
-1. Implementați eliminarea codului neexcutabil, completând clasa `UnreachableCodeElimination` din pachetul `optim`.
+1. Implementați **eliminarea codului neexcutabil**, completând clasa `UnreachableCodeElimination` din pachetul `optim`.
 1. **Rulați alternativ** runde ale celor două optimizări, reconstituind secvența de prelucrări din descrierea laboratorului.
