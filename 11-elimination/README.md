@@ -11,7 +11,7 @@ Observăm că, după propagarea copiilor/constantelor, anumite instrucțiuni dev
 O instrucțiune poate fi considerată **utilă**  (engl. *useful*) dacă:
 
 1. **Întoarce** o valoare din funcție (`RET`) sau **invocă** o altă funcție (`CALL`). Acestea se numesc instrucțiuni **critice**.
-1. Rezultatul său este **utilizat** de altă instrucțiune utilă. De exemplu, dacă instrucțiunea `b = ADD a 1` a fost deja marcată a ca utilă, atunci și instrucțiunea care îl definește pe `a` va fi considerată utilă.
+1. Rezultatul său este **utilizat** de altă instrucțiune utilă. De exemplu, dacă instrucțiunea `b = ADD a 1` a fost deja marcată ca utilă, atunci și instrucțiunea care îl definește pe `a` va fi considerată utilă.
 1. Este de **salt condiționat**, dar execuția cel puțin a unei instrucțiuni utile **depinde** de existența sa.
 
 Punctul (3) este mai subtil și necesită detaliere:
@@ -86,4 +86,5 @@ Următorul bloc prelucrat este `forBody`, care posedă un **unic succesor**, `if
 ## Cerințe
 
 1. Implementați **eliminarea codului inutil** în clasa `UselessCodeElimination` din pachetul `optim`.
-1. În cadrul **eliminării fluxului de control inutil**, implementați **eliminarea blocurilor goale** și **combinarea blocurilor**, în clasa `UselessControlFlowElimination` din pachetul `optim`.
+1. În cadrul **eliminării fluxului de control inutil**, implementați **eliminarea blocurilor goale** și **combinarea blocurilor**, în clasa `UselessControlFlowElimination` din pachetul `optim`. Pentru simplitate, există opțiunea de a implementa eliminarea blocurilor goale ca un **caz particular** al combinării blocurilor, motiv pentru care este posibil ca numele blocurilor rămase în CFG să difere față de cele din diagramele de mai sus.
+1. Reconstituiți secvența de transformări din descrierea laboratorului.
