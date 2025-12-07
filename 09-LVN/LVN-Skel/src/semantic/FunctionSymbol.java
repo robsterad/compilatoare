@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 public class FunctionSymbol extends IdSymbol implements Scope {
  
     // LinkedHashMap reține ordinea adăugării.
-    protected Map<String, Symbol> symbols = new LinkedHashMap<>();
+    public Map<String, Symbol> symbols = new LinkedHashMap<>();
     
     protected Scope parent;
 

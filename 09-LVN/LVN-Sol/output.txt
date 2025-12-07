@@ -1,51 +1,51 @@
 Initial entry block:
 entry1:
-	a ← MUL f f
-	b ← ADD 0 a
-	c ← ADD 2 8
-	d ← MUL c b
-	e ← MUL f f
-	x ← ADD e d
-	g ← ADD b d
-	h ← ADD d b
-	i ← COPY g
-	y ← DIV i h
-	RET y
+	a.0 = MUL f f
+	b.0 = ADD 0 a.0
+	c.0 = ADD 2 8
+	d.0 = MUL c.0 b.0
+	e.0 = MUL f f
+	x.0 = ADD e.0 d.0
+	g.0 = ADD b.0 d.0
+	h.0 = ADD d.0 b.0
+	i.0 = COPY g.0
+	y.0 = DIV i.0 h.0
+	RET y.0
 
 After Value Numbering:
 entry1:
-	a ← MUL f f
-	b ← COPY a
-	c ← COPY 10
-	d ← MUL 10 a
-	e ← COPY a
-	x ← ADD a d
-	g ← COPY x
-	h ← COPY x
-	i ← COPY x
-	y ← DIV x x
-	RET y
+	a.0 = MUL f f
+	b.0 = COPY a.0
+	c.0 = COPY 10
+	d.0 = MUL 10 a.0
+	e.0 = COPY a.0
+	x.0 = ADD a.0 d.0
+	g.0 = COPY x.0
+	h.0 = COPY x.0
+	i.0 = COPY x.0
+	y.0 = DIV x.0 x.0
+	RET y.0
 
 Value Numbering table
-#    key          canonical
-0    f            f
-1    MUL #0 #0    a
-1    a            a
-2    0            0
-1    ADD #1 #2    a
-1    b            a
-3    2            2
-4    8            8
-5    ADD #3 #4    10
-5    10           10
-5    c            10
-6    MUL #1 #5    d
-6    d            d
-1    e            a
-7    ADD #1 #6    x
-7    x            x
-7    g            x
-7    h            x
-7    i            x
-8    DIV #7 #7    y
-8    y            y
+key          value number
+f            f
+MUL f f      a.0
+a.0          a.0
+0            0
+ADD 0 a.0    a.0
+b.0          a.0
+2            2
+8            8
+ADD 2 8      10
+10           10
+c.0          10
+MUL 10 a.0   d.0
+d.0          d.0
+e.0          a.0
+ADD a.0 d.0  x.0
+x.0          x.0
+g.0          x.0
+h.0          x.0
+i.0          x.0
+DIV x.0 x.0  y.0
+y.0          y.0

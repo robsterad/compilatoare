@@ -43,6 +43,11 @@ public class Instruction extends IdSymbol {
     IdSymbol mutableResult;
 
     /**
+     * Posibil bloc care conține această instrucțiune
+     */
+    public BasicBlock containingBlock;
+
+    /**
      * Creează o instrucțiune pură. Dacă numele rezultatului nu este null, versiunea acestuia se incrementează
      * și rezultatul se identifică cu instrucțiunea. Dacă numele rezultatului este null, instrucțiunea nu produce
      * rezultat, ca în cazul celor de salt (BR) sau de precizare a valorii întoarse de o funcție (RET).
@@ -129,6 +134,24 @@ public class Instruction extends IdSymbol {
      */
     public boolean isCommutative() {
         return Arrays.asList(InstructionType.ADD, InstructionType.MUL).contains(iType);
+    }
+
+    /**
+     * Verifică dacă instrucțiunea curentă reprezintă un salt condiționat.
+     *
+     * @return true, în caz afirmativ
+     */
+    public boolean isConditionalBranch() {
+        return iType == InstructionType.BR && operands.size() == 3;
+    }
+
+    /**
+     * Verifică dacă instrucțiunea curentă reprezintă un salt necondiționat.
+     *
+     * @return true, în caz afirmativ
+     */
+    public boolean isUnconditionalBranch() {
+        return iType == InstructionType.BR && operands.size() == 1;
     }
 
     /**

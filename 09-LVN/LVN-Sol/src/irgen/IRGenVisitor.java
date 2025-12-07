@@ -83,7 +83,14 @@ public class IRGenVisitor implements ASTVisitor<Symbol> {
 
 	@Override
 	public Symbol visit(ASTNode.UnaryMinus uMinus) {
-		return null;
+		var instr = new Instruction(
+				InstructionType.NEG,
+				"neg",
+				uMinus.expr.accept(this)
+		);
+		currentCfg.addInstruction(instr);
+
+		return instr;
 	}
 
 	/**
@@ -179,8 +186,7 @@ public class IRGenVisitor implements ASTVisitor<Symbol> {
 
 		// Se generează cod pentru ramura then în blocul then, iar valoarea ramurii este copiată în temporarul
 		// modificabil. În final se adaugă un salt necondiționat către blocul final
-		var thenValue = iff.thenBranch.accept(this);
-		currentCfg.addInstruction(new Instruction(InstructionType.COPY, ifValue, thenValue));
+		visitInitAssign(ifValue, iff.thenBranch);
 		currentCfg.addInstruction(new Instruction(InstructionType.BR, (String) null, endBlock));
 
 		// Se trece la blocul else
@@ -189,8 +195,7 @@ public class IRGenVisitor implements ASTVisitor<Symbol> {
 
 		// Se generează cod pentru ramura else în blocul else, iar valoarea ramurii este copiată în temporarul
 		// modificabil. În final se adaugă un salt necondiționat către blocul final
-		var elseValue = iff.elseBranch.accept(this);
-		currentCfg.addInstruction(new Instruction(InstructionType.COPY, ifValue, elseValue));
+		visitInitAssign(ifValue, iff.elseBranch);
 		currentCfg.addInstruction(new Instruction(InstructionType.BR, (String) null, endBlock));
 
 		// Se trece la blocul final, pentru ca următoarele instrucțiuni, aferente altor construcții din AST să fie

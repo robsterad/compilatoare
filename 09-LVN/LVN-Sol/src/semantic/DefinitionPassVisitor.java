@@ -190,6 +190,12 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
         currentScope.add(TypeSymbol.FLOAT);
         currentScope.add(TypeSymbol.BOOL);
 
+        var printInt = new FunctionSymbol(currentScope, "print_int");
+        var n = new IdSymbol("n");
+        n.setType(TypeSymbol.INT);
+        printInt.add(n);
+        currentScope.add(printInt);
+
         for (var stmt : program.stmts) {
             stmt.accept(this);
         }

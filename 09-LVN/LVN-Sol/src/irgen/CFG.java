@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,7 +31,7 @@ public class CFG {
     /**
      * Simbolul funcției căreia îi corespunde acest CFG, sau null
      */
-    FunctionSymbol functionSymbol;
+    public FunctionSymbol functionSymbol;
 
     /**
      * Listă ordonată de blocuri. Muchiile sunt implicite în reprezentarea blocurilor înselor (succesori și predecesori).
@@ -76,6 +77,23 @@ public class CFG {
      */
     public void addInstruction(Instruction instruction) {
         currentBlock.addInstruction(instruction);
+    }
+
+    /**
+     * Inversează CFG-ul curent. Lista de blocuri este inversată, iar succesorii și predecesorii, interschimbați.
+     * Instrucțiunile originale sunt păstrate.
+     */
+    public void reverse() {
+        for (var block : blocks) {
+            var temp = block.successors;
+            block.successors = block.predecessors;
+            block.predecessors = temp;
+
+            Collections.reverse(block.predecessors);
+            Collections.reverse(block.successors);
+        }
+
+        Collections.reverse(blocks);
     }
 
     @Override

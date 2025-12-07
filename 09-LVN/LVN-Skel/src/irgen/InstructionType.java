@@ -6,6 +6,7 @@ public enum InstructionType {
     SUB,
     MUL,
     DIV,
+    NEG,
     CMP_EQ,
     CMP_LE,
     CMP_LT,

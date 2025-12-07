@@ -2,7 +2,7 @@
 
 ## Cod intermediar
 
-În cadrul unui compilator, se ridică problema alegerii unei **reprezentări intermediare** a codului sursă, care să înlesnească aplicarea optimizărilor. Soluția adoptată pe scară largă vizează așa-zisul **cod intermediar**, care este o formă de reprezentare intermediară, internă compilatorului, la fel ca AST-ul (deși mai există și alte forme, precum graful de dependență a instrucțiunilor sau graful de apel al funcțiilor). Noi vom utiliza o anumită specie de cod intermediar, numită ***three-adress code***, întrucât majoritatea instrucțiunilor referă maximum trei entități (rezultat și operanzi). Un de exemplu de instrucțiune este `b = ADD a 2`. Acest format este similar celui utilizat în cadrul proiectului [LLVM](https://mcyoung.xyz/2023/08/01/llvm-ir/).
+În cadrul unui compilator, se ridică problema alegerii unei **reprezentări intermediare** a codului sursă, care să înlesnească aplicarea optimizărilor. Soluția adoptată pe scară largă vizează așa-zisul **cod intermediar**, care este o reprezentare internă compilatorului, la fel ca AST-ul (deși mai există și alte forme, precum graful de dependență a instrucțiunilor sau graful de apel al funcțiilor). Noi vom utiliza o anumită specie de cod intermediar, numită ***three-adress code***, întrucât majoritatea instrucțiunilor referă maximum trei entități (rezultat și operanzi). Un de exemplu de instrucțiune este `b = ADD a 2`. Acest format este similar celui utilizat în cadrul proiectului [LLVM](https://mcyoung.xyz/2023/08/01/llvm-ir/).
 
 **Avantajele** utilizării unui astfel de cod intermediar sunt următoarele:
 
@@ -27,14 +27,14 @@ Int complex(Int n) {
 
 CFG-ul este următorul:
 
-![CFG](./media/cfg.png)
+![CFG](./media/sum.svg)
 
 În cadrul **scheletului** de laborator, reprezentarea și construcția codului intermediar se află în pachetul `irgen`:
 
 * Clasa `Instruction` desemnează o **instrucțiune** de cod intermediar, caracterizată de tipul, rezultatul și operanzii săi.
 * Enumerarea `InstructionType` surprinde **tipurile** posibile ale instrucțiunilor.
 * Clasa `BasicBlock` reprezintă un **bloc**, caracterizat de eticheta de început, lista de instrucțiuni și listele de blocuri succesor și predecesor din cadrul CFG-ului căruia îi aparține acest bloc.
-* Clasa `CFG` descrie un **graf al flxului de control**, prin lista blocurilor și blocul curent la care se adaugă noi instrucțiuni. Clasa expune o metodă de afișare a grafului în **format DOT**, pe care îl puteți vizualiza cu [plug-in-ul de IntelliJ](https://plugins.jetbrains.com/plugin/10312-dot-language).
+* Clasa `CFG` descrie un **graf al flxului de control**, prin lista blocurilor și blocul curent la care se adaugă noi instrucțiuni. Clasa expune o metodă de afișare a grafului în **format DOT**, pe care îl puteți vizualiza cu [plug-in-ul de IntelliJ](https://plugins.jetbrains.com/plugin/27121-dot-support).
 * Clasa `IRGenVisitor` construiește pentru un program CPLang:
   * CFG-ul **corpului principal** în fișierul `main.dot`
   * CFG-ul **fiecărei funcții** în fișierele `<nume-funcție>.dot`.
@@ -90,15 +90,16 @@ Aceste optimizări pot **interacționa** masiv, în cascadă, fiecare optimizare
 
 ## Numerotarea valorilor
 
-**Toate optimizările** de mai sus, împreună cu câteva extensii, pot fi implementate într-o **singură trecere** peste un *basic block*, utilizând strategia de **numerotare a valorilor** (***value numbering***). Pentru simplitate, vom presupune că toate variabilele sunt **definite o singură dată**, încât să putem aplica în siguranță optimizările de mai sus. În cazul general, când codul intermediar nu satisface această condiție a definirilor unice, se poate aplica un algoritm de transformare într-o astfel de formă (*static single-assignment form*, SSA), discutat la curs.
+**Toate optimizările** de mai sus, împreună cu câteva extensii, pot fi implementate într-o **singură trecere** peste un *basic block*, utilizând strategia de **numerotare a valorilor** (***value numbering***). Aceasta urmărește gruparea expresiilor din bloc pe baza criteriului **identității de valoare**. Deși doar pentru o parte dintre expresii putem cunoaște de la compilare valoarea concretă (de exemplu, `5`), în urma analizei putem determina expresiile care calculează întotdeauna aceeași valoare pentru toate execuțiile posibile ale blocului, **chiar dacă** aceasta este necunoscută la compilare. Prin urmare, vom folosi termenul de *valoare* într-o accepție abstractă, întrucât e posibil să nu o cunoaștem de fapt.
 
-Strategia de numerotare a valorilor urmărește gruparea expresiilor din bloc pe baza criteriului **identității de valoare**. Deși doar pentru o parte dintre expresii putem cunoaște de la compilare valoarea concretă (de exemplu, `5`), în urma analizei putem determina expresiile care calculează întotdeauna aceeași valoare pentru toate execuțiile posibile ale blocului, **chiar dacă** aceasta este necunoscută la compilare. Prin urmare, vom folosi termenul de *valoare* într-o accepție abstractă, întrucât e posibil să nu o cunoaștem de fapt.
+Varianta clasică a strategiei, prezentată la curs, își datorează numele utilizării numerelor întregi pentru numerotarea valorilor abstracte. Fiecare număr de valoare (*value number*) are asociată o listă de nume (dacă valoarea concretă nu este cunoscută) sau o constantă (dacă valoarea concretă este cunoscută), care denotă în cod acea valoare abstractă. Această abordare poate gestiona redefinirile de variabile.
 
-Strategia utilizează un tabel cu **câte o intrare** pentru fiecare expresie din bloc, și cu **trei coloane**:
+Pentru simplitate, vom presupune mai departe că toate variabilele sunt **definite o singură dată**, încât să putem aplica în siguranță optimizările de mai sus. În cazul general, când codul intermediar nu satisface această condiție a definirilor unice, se poate aplica un algoritm de transformare într-o astfel de formă (*static single-assignment form*, SSA), discutat la curs. Avantajul major al formei SSA în acest caz este **identitatea** dintre un număr de valoare și numele SSA sau constanta care desemnează acea valoare abstractă, nemaifiind necesară o listă separată de nume.
 
-* **Numărul valorii** (*value number*). Toate expresiile care calculează aceeași valoare vor avea același număr asociat.
-* **Cheia de căutare**, care descrie o expresie din bloc. Este singura coloană cu **intrări unice**.
-* **Reprezentarea canonică**. Dacă expresia a fost deja calculată, conține **rezultatul** acesteia, care poate fi o **constantă**, dacă valoarea concretă este cunoscută, sau o **variabilă**, dacă valoarea concretă nu este cunoscută.
+Strategia utilizează un tabel cu **câte o intrare** pentru fiecare expresie din bloc, având **două coloane**:
+
+* **Expresia** din bloc, care constituie cheia de căutare și posedă **intrări unice**.
+* **Numărul valorii** (*value number*). Toate expresiile care calculează aceeași valoare vor avea același „număr” asociat. Dacă expresia a fost deja calculată, descrie **rezultatul** acesteia, care poate fi o **constantă**, dacă valoarea concretă este cunoscută, sau un **nume**, dacă valoarea concretă nu este cunoscută.
 
 Să vedem cum decurge completarea tabelului și rescrierea instrucțiunilor pentru blocul de mai jos:
 
@@ -111,77 +112,77 @@ f = ADD d 2
 g = ADD c c
 ```
 
-* La întâlnirea instrucțiunii `b = COPY a`, primul lucru este căutarea operanzilor în tabel. Cum tabelul este gol, se creează o intrare pentru `a` în forma `<0, a, a>`. Numărul valorii este `0`, cheia de căutare este `a`, iar reprezentarea canonică este tot `a`. Apoi se creează o intrare pentru rezultatul `b`, care capătă același număr de valoare și aceeași reprezentare canonică de la `a`. A doua intrare este `<0, b, a>`. În acest moment, tabelul este:
+* La întâlnirea instrucțiunii `b = COPY a`, în primul rând se căută operanzii în tabel. Cum tabelul este gol, se creează o intrare pentru `a` în forma `<a, a>`. Cheia de căutare este `a`, iar numărul valorii este tot `a`. Apoi, se creează o intrare pentru rezultatul `b`, care capătă același număr de valoare de la `a`; astfel, a doua intrare este `<b, a>`. În acest moment, tabelul este:
 
-  |#|Cheie|Canonic|
-  |-|-----|-------|
-  |0|a|a|
-  |0|b|a|
+  |Cheie|Număr valoare|
+  |-----|-------|
+  |a|a|
+  |b|a|
 
 * La întâlnirea instrucțiunii `c = COPY 2`, se realizează o prelucrare similară, de data aceasta adăugându-se intrări pentru literalul `2` și pentru rezultatul `c`. Tabelul devine:
 
-  |#|Cheie|Canonic|
-  |-|-----|-------|
-  |0|a|a|
-  |0|b|a|
-  |1|2|2|
-  |1|c|2|
+  |Cheie|Număr valoare|
+  |-----|-------------|
+  |a|a|
+  |b|a|
+  |2|2|
+  |c|2|
 
-* La întâlnirea instrucțiunii `d = COPY b`, se determină mai întâi intrarea existentă din tabel pentru operandul `b`. În continuare, se adaugă intrarea pentru rezultatul `d`, care preia numărul valorii și reprezentarea canonică de la operandul `b`. Tabelul devine:
+* La întâlnirea instrucțiunii `d = COPY b`, se determină mai întâi intrarea existentă din tabel pentru operandul `b`. În continuare, se adaugă intrarea pentru rezultatul `d`, care preia numărul valorii de la operandul `b`. Tabelul devine:
 
-  |#|Cheie|Canonic|
-  |-|-----|-------|
-  |0|a|a|
-  |0|b|a|
-  |1|2|2|
-  |1|c|2|
-  |0|d|a|
+  |Cheie|Număr valoare|
+  |-----|-------------|
+  |a|a|
+  |b|a|
+  |2|2|
+  |c|2|
+  |d|a|
 
-  În plus, putem acum realiza ***copy propagation*** și rescrie instrucțiunea în varianta `d = COPY a`, unde pe `a` l-am obținut din **reprezentarea canonică** a lui `b`.
+  În plus, putem acum realiza ***copy propagation*** și rescrie instrucțiunea în varianta `d = COPY a`, unde `a` constituie **numărul valorii** lui `b`.
 
-* La întâlnirea instrucțiunii `e = ADD a 2`, se determină mai întâi intrările existente din tabel pentru operanzi: variabila `a` și literalul `2`. În continuare, se pune problema construirii cheii expresiei `ADD a 2`. În locul acestei expresii înseși putem utiliza o cheie mai flexibilă, de forma `ADD #0 #1`, unde utilizăm **numerele valorilor** operanzilor în locul operanzilor înșiși. Introducem o intrare și pentru rezultatul `e`, și ambele intrări capătă un nou număr de valoare, `2`, și reprezentarea canonică `e`. Tabelul devine:
+* La întâlnirea instrucțiunii `e = ADD a 2`, se determină mai întâi intrările existente din tabel pentru operanzi: variabila `a` și literalul `2`. În continuare, se pune problema construirii cheii expresiei din partea dreaptă. Pentru aceasta, descoperim că **numerele valorilor** celor doi operanzi sunt identice cu operanzii. Astfel, construim cheia `ADD a 2`, adăugăm câte o intrare pentru ea și pentru rezultatul `e`, și ambele intrări capătă numărul de valoare `e`. Tabelul devine:
 
-  |#|Cheie|Canonic|
-  |-|-----|-------|
-  |0|a|a|
-  |0|b|a|
-  |1|2|2|
-  |1|c|2|
-  |0|d|a|
-  |2|ADD #0 #1|e|
-  |2|e|e|
+  |Cheie|Număr valoare|
+  |-----|-------------|
+  |a|a|
+  |b|a|
+  |2|2|
+  |c|2|
+  |d|a|
+  |ADD a 2|e|
+  |e|e|
 
-* La întâlnirea instrucțiunii `f = ADD d 2`, se determină mai întâi intrările existente din tabel pentru operanzi: variabila `d` și literalul `2`. În continuare, se vede utilitatea cheilor extinse introduse la punctul anterior. Dacă utilizam acum cheia `ADD d 2`, nu am fi recunoscut cheia introdusă în prealabil, `ADD a 2`. În schimb, utilizând cheia extinsă, `ADD #0 #1`, recunoaștem expresia ca fiind deja calculată, **în ciuda** diferențelor textuale. Tabelul devine:
+* La întâlnirea instrucțiunii `f = ADD d 2`, se determină mai întâi intrările existente din tabel pentru operanzi: variabila `d` și literalul `2`. În continuare, se observă avantajul utilizării numerelor valorilor operanzilor în cosntrucția cheii: dacă utilizam acum cheia `ADD d 2`, nu am fi recunoscut cheia introdusă în prealabil, `ADD a 2`. În schimb, utilizând numerele valorilor, `ADD a 2`, recunoaștem expresia ca fiind deja calculată, **în ciuda** diferențelor textuale. Tabelul devine:
 
-  |#|Cheie|Canonic|
-  |-|-----|-------|
-  |0|a|a|
-  |0|b|a|
-  |1|2|2|
-  |1|c|2|
-  |0|d|a|
-  |2|ADD #0 #1|e|
-  |2|e|e|
-  |2|f|e|
+  |Cheie|Număr valoare|
+  |-----|-------------|
+  |a|a|
+  |b|a|
+  |2|2|
+  |c|2|
+  |d|a|
+  |ADD a 2|e|
+  |e|e|
+  |f|e|
 
   În plus, putem aplica ***common subexpression elimination*** și rescrie instrucțiunea în forma `f = COPY e`.
 
-* Dacă în instrucțiunea de mai sus, întâlneam operanzii inversați, `f = ADD 2 d`, cheia de căutare ar fi fost `ADD #1 #0`, diferită de cea din tabel. Prin urmare, doar pentru operațiile **comutative**, putem **sorta crescător** numerele valorilor, pentru a obține cheia `ADD #0 #1`, din tabel.
+* Dacă în instrucțiunea de mai sus, întâlneam operanzii inversați, `f = ADD 2 d`, cheia de căutare ar fi fost `ADD 2 a`, diferită de cea din tabel. Prin urmare, doar pentru operațiile **comutative**, putem **sorta crescător** numerele valorilor, pentru a obține cheia `ADD a 2`, din tabel.
 
-* La întâlnirea instrucțiunii `g = ADD c c`, se determină mai întâi intrările existente din tabel pentru operanzi: variabila `c`. De data aceasta, reprezentarea canonică a lui `c` este o constantă, și putem aplica ***constant folding***. Prin urmare, se introduc intrări pentru rezultatul 4, precalculat, și pentru rezultatul `g`. Tabelul devine:
+* La întâlnirea instrucțiunii `g = ADD c c`, se determină mai întâi intrările existente din tabel pentru operanzi: variabila `c`. De data aceasta, numărul valorii lui `c` este o constantă, și putem aplica ***constant folding***. Prin urmare, se introduc intrări pentru rezultatul `4`, precalculat, și pentru rezultatul `g`. Tabelul devine:
 
-  |#|Cheie|Canonic|
-  |-|-----|-------|
-  |0|a|a|
-  |0|b|a|
-  |1|2|2|
-  |1|c|2|
-  |0|d|a|
-  |2|ADD #0 #1|e|
-  |2|e|e|
-  |2|f|e|
-  |3|4|4|
-  |3|g|4|
+  |Cheie|Număr valoare|
+  |-----|-------------|
+  |a|a|
+  |b|a|
+  |2|2|
+  |c|2|
+  |d|a|
+  |ADD a 2|e|
+  |e|e|
+  |f|e|
+  |4|4|
+  |g|4|
 
   În plus, putem rescrie instrucțiunea în forma `g = COPY 4`.
 
@@ -189,5 +190,5 @@ g = ADD c c
 
 ## Cerințe
 
-1. Vizualizați CFG-urile funcțiilor ``simple`` și ``complex`` din fișierul ``value-numbering.txt``.
+1. Vizualizați CFG-urile funcțiilor ``simple`` și ``complex`` din fișierul ``lvn.txt``.
 1. Implementați strategia de **numerotare a valorilor**, completând porțiunile `TODO` din clasa `ValueNumbering` din pachetul `optim`. Blocul pe care îl veți optimiza este corpul funcției `simple`. O posibilă ieșire este în fișierul `output.txt`.
