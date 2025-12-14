@@ -81,12 +81,14 @@ public class SSATransformer {
     /**
      * Populează definitionBlockSets.
      *
-     * @param dominatorTree    arborele de dominanță
-     * @param livenessAnalysis analiza de liveness deja desfășurată
+     * @param cfg CFG-ul de transformat
      */
-    public SSATransformer(DominatorTree dominatorTree, LivenessAnalysis livenessAnalysis) {
-        this.dominatorTree = dominatorTree;
-        this.livenessAnalysis = livenessAnalysis;
+    public SSATransformer(CFG cfg) {
+        dominatorTree = new DominatorTree(cfg);
+        dominatorTree.computeDominanceFrontiers();
+
+        livenessAnalysis = new LivenessAnalysis(cfg);
+        livenessAnalysis.runBackwards();
 
         // Parcurgem blocurile din CFG și instrucțiunile din fiecare bloc
         for (var block : livenessAnalysis.cfg.blocks)

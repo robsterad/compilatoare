@@ -3,6 +3,7 @@ package analysis;
 import irgen.BasicBlock;
 import irgen.CFG;
 import irgen.Instruction;
+import semantic.FunctionSymbol;
 import semantic.IdSymbol;
 import semantic.Symbol;
 
@@ -62,8 +63,12 @@ public class LivenessAnalysis extends DataflowAnalysis<Set<IdSymbol>> {
         inInfo.remove(instruction.getResult());
         // Și de-abia apoi înviați operanzii.
         // Dacă procedăm invers, e posibil ca un operand să rămână în mod eronat dead deasupra instrucțiunii.
+        // Ne interesează doar operanzii variabile; îi ignorăm pe cei funcție sau basic block.
         instruction.operands.stream()
-                .filter(operand -> (operand instanceof IdSymbol) && !(operand instanceof BasicBlock))
+                .filter(operand ->
+                        (operand instanceof IdSymbol)
+                        && !(operand instanceof FunctionSymbol)
+                        && !(operand instanceof BasicBlock))
                 .forEach(operand -> inInfo.add((IdSymbol)operand));
 
         return inInfo;

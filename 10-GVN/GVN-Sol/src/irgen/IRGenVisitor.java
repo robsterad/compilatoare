@@ -83,7 +83,14 @@ public class IRGenVisitor implements ASTVisitor<Symbol> {
 
 	@Override
 	public Symbol visit(ASTNode.UnaryMinus uMinus) {
-		return null;
+		var instr = new Instruction(
+				InstructionType.NEG,
+				"neg",
+				uMinus.expr.accept(this)
+		);
+		currentCfg.addInstruction(instr);
+
+		return instr;
 	}
 
 	/**

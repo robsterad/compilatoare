@@ -25,26 +25,35 @@ public class UnreachableCodeElimination {
      * Verifică dacă salturile condiționate de la finalul blocurilor au condiții constante. În caz afirmativ, rescrie
      * saltul cu unul necondiționat către unicul succesor valabil, înlătură ceilalți succesori ai blocului curent,
      * și înlătură blocul curent dintre predecesorii succesorilor eliminați.
+     *
+     * @return true, dacă a fost identificată o condiție constantă
      */
-    public void processConditionalBranches() {
+    protected boolean processConditionalBranches() {
+        // Presupunem că nu vom găsi modificări
+        boolean changed = false;
+
         // Parcurgem toate blocurile
         for (var block : cfg.blocks) {
             // TODO Ne interesează doar dacă ultima instrucțiune este salt condiționat: BR conditie blocAdev blocFals
 
             // TODO Verificăm dacă condiția saltului (primul operand) este o constantă întreagă (0/1)
 
-            // TODO Determinăm blocul pe care îl păstrăm drept țintă și rescriem ca salt necondiționat: BR bloc
+            // TODO Determinăm blocul pe care îl păstrăm drept țintă
 
-            // TODO Parcurgem succesorii blocului curent și îi eliminăm pe cei diferiți de țintă. De asemenea, eliminăm
-            //  blocul curent din listele de predecesori ai succesorilor înlăturați.
+            // TODO Stabilim ținta drept unic succesor al blocului curent.
+            //  Vedeți metoda BasicBlock.setUniqueSuccesor(BasicBlock).
 
+            // Marcăm modificarea doar dacă am ajuns în acest punct
+            changed = true;
         }
+
+        return changed;
     }
 
     /**
      * Determină blocurile executabile, pornind de la blocul de intrare din CFG
      */
-    public void computeReachableBlocks() {
+    protected void computeReachableBlocks() {
         reachableBlocks.clear();
         computeReachableBlocks(cfg.blocks.getFirst());
     }
@@ -55,7 +64,7 @@ public class UnreachableCodeElimination {
      * @param block blocul de plecare
      */
     protected void computeReachableBlocks(BasicBlock block) {
-        // TODO Marcăm blocul curent ca executabil
+        // TODO Marcăm blocul curent ca executabil în membrul reachableBlocks
 
         // TODO Determinăm blocurile accesibile din blocul curent, evitând ciclurile
 
@@ -67,7 +76,7 @@ public class UnreachableCodeElimination {
      * executabile în care mai intră un singur predecesor (în urma înlăturării predecesorilor neexecutabili) sunt
      * înlocuite cu instrucțiuni de copiere a versiunii furnizate de predecesorul rămas.
      */
-    public void cleanup() {
+    protected void removeUnreachableBlocks() {
         // TODO Păstrăm în CFG doar blocurile executabile
 
         // Parcurgem blocurile executabile, singurele rămase în CFG, după implementarea punctului anterior
@@ -77,11 +86,27 @@ public class UnreachableCodeElimination {
             // TODO Pentru blocurile cu un singur predecesor, verificăm dacă există instrucțiuni ϕ, de pe vremea când
             //  blocul avea mai mulți predecesori, și le înlocuim cu instrucțiuni de copiere a singurului operand valid
             if (block.predecessors.size() == 1)
-                for (var instruction : block.instructions) {
+                for (var instruction : block.instructions)
                     if (instruction.iType == InstructionType.PHI) {
                         // TODO
                     }
-                }
         }
+    }
+
+    /**
+     * Rulează cele trei etape.
+     *
+     * @return true, dacă s-a modificat CFG-ul
+     */
+    public boolean run() {
+        var changed = processConditionalBranches();
+
+        // Dacă în prima etapă au fost depistate salturi cu condiții constante, rulăm și următoarele două etape
+        if (changed) {
+            computeReachableBlocks();
+            removeUnreachableBlocks();
+        }
+
+        return changed;
     }
 }

@@ -1,6 +1,7 @@
 package analysis;
 
 import irgen.BasicBlock;
+import irgen.CFG;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
@@ -14,7 +15,7 @@ import semantic.Symbol;
 
 /**
  * Arborele de dominare conține blocuri drept noduri, iar părintele unui bloc este dominatorul său imediat.
- * Este utilizat în construcția formei SSA.
+ * Este utilizat în construcția formei SSA minimale.
  *
  * Dominatorul imediat al unui bloc B este cel mai apropiat dominator al lui B, diferit de B însuși.
  * Blocul de intrare în CFG este rădăcina arborelui de dominare (domină întregul CFG) și nu are un dominator imediat.
@@ -33,9 +34,9 @@ import semantic.Symbol;
  */
 public class DominatorTree {
     /**
-     * Este necesară analiza prealabilă a dominatorilor fiecărui bloc
+     * CFG-ul pentru care determinăm arborele de dominanță
      */
-    DominatorAnalysis dominatorAnalysis;
+    CFG cfg;
 
     /**
      * Codificare a arborelui de dominare ca map care asociază fiecărui bloc mulțimea de copii
@@ -46,7 +47,7 @@ public class DominatorTree {
      * Codificare redundantă a arborelui de copii ca map care asociază fiecărui bloc părintele său (dominatorul imediat).
      * În funcție de situație, poate fi utilă o codificare sau cealaltă.
      */
-    Map<BasicBlock, BasicBlock> immediateDominators = new IdentityHashMap<>();
+    public Map<BasicBlock, BasicBlock> immediateDominators = new IdentityHashMap<>();
 
     /**
      * Frontierele de dominanță ale blocurilor, fiecare fiind reprezentată ca o mulțime de blocuri
@@ -55,14 +56,17 @@ public class DominatorTree {
 
     static STGroupFile group = new STGroupFile("irgen/cfg.stg");
 
-    public DominatorTree(DominatorAnalysis dominatorAnalysis) {
-        this.dominatorAnalysis = dominatorAnalysis;
-        var blocks = dominatorAnalysis.cfg.blocks;
+    public DominatorTree(CFG cfg) {
+        this.cfg = cfg;
+
+        // Este necesară analiza prealabilă a dominatorilor fiecărui bloc
+        var immediateDominatorAnalysis = new ImmediateDominatorAnalysis(cfg);
+        immediateDominatorAnalysis.runForward();
+
+        var blocks = cfg.blocks;
 
         // Este utilă stocarea copiilor unui nod în post-ordine inversă
-        var rpoNumbering = new ReversePostOrderNumbering(dominatorAnalysis.cfg);
-        rpoNumbering.computeRpoNumbers();
-        var rpoComparator = rpoNumbering.getRpoComparator();
+        var rpoComparator = immediateDominatorAnalysis.postOrderNumbering.getReversePostOrderComparator();
 
         // Se inițializează mulțimile de copii și frontierele de dominanță cu mulțimi vide
         for (var block : blocks) {
@@ -70,15 +74,21 @@ public class DominatorTree {
             dominanceFrontiers.put(block, new HashSet<>());
         }
 
-        // Se determină dominatorul imediat al fiecărui bloc diferit de cel de intrare prin apelul metodei cu același
-        // nume, și se stabilesc legăturile bidirecționale dintre părinți și copii
+        // Se stabilesc legăturile bidirecționale dintre părinți și copii în arborele de dominanță
         for (var block : blocks.subList(1, blocks.size())) {
-            var immediateDominator = computeImmediateDominator(block, dominatorAnalysis.blockInInfos.get(block));
+            var immediateDominator = immediateDominatorAnalysis.blockInInfos.get(block).getLast();
             immediateDominators.put(block, immediateDominator);
             childrenSets.get(immediateDominator).add(block);
         }
+    }
 
-        // Se determină frontierele de dominanță ale fiecărui bloc. Ideea este următoarea:
+    /**
+     * Determină frontierele de dominanță ale tuturor blocurilor.
+     */
+    public void computeDominanceFrontiers() {
+        var blocks = cfg.blocks;
+
+        // Ideea este următoarea:
         // În primul rând, un bloc cu un singur predecesor nu poate să părăsească sfera de dominanță a blocului care
         // îi domină unicul predecesor (dominatorul poate fi unicul predecesor însuși, datorită reflexivității
         // dominanței), și prin urmare nu se va regăsi în vreo frontieră de dominanță. Deci candidații pentru
@@ -120,30 +130,9 @@ public class DominatorTree {
                 }
     }
 
-    /**
-     * Determină dominatorul imediat al unui bloc utilizând mulțimea tuturor dominatorilor săi, determinată printr-o
-     * analiză prealabilă.
-     *
-     * @param  block      blocul pentru care se dorește determinarea dominatorului imediat
-     * @param  dominators lista tuturor dominatorilor săi
-     * @return            dominatorul imediat
-     */
-    protected BasicBlock computeImmediateDominator(BasicBlock block, Set<BasicBlock> dominators) {
-        // Se pornește de la primul predecesor din CFG al blocului de interes și se urmează repetat primul predecesor
-        // până la întâlnirea primului dominator al blocului de interes. Acela va fi și dominatorul imediat.
-        // În locul primului predecesor putea fi ales oricare altul, întrucât un dominator al blocului de interes
-        // domină prin definiție toți predecesorii săi.
-        var crtBlock = block.predecessors.getFirst();
-
-        while (! dominators.contains(crtBlock))
-            crtBlock = crtBlock.predecessors.getFirst();
-
-        return crtBlock;
-    }
-
     @Override
     public String toString() {
-        return dominatorAnalysis.cfg.blocks.stream()
+        return cfg.blocks.stream()
                 .map(block ->
                         block.getName() + ": "
                         + "IDOM = " + Optional.ofNullable(immediateDominators.get(block))
@@ -163,7 +152,7 @@ public class DominatorTree {
     public ST toDOT() {
         var graph = group.getInstanceOf("cfg");
 
-        for (var block : dominatorAnalysis.cfg.blocks) {
+        for (var block : cfg.blocks) {
             var blockTemplate = group.getInstanceOf("block")
                     .add("name", block.getName())
                     .add("instructions", block.toString().replace("\n\t", "\\l") + "\\l");

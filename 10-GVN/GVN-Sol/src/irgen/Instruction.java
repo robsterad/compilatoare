@@ -43,6 +43,11 @@ public class Instruction extends IdSymbol {
     IdSymbol mutableResult;
 
     /**
+     * Posibil bloc care conține această instrucțiune
+     */
+    public BasicBlock containingBlock;
+
+    /**
      * Creează o instrucțiune pură. Dacă numele rezultatului nu este null, versiunea acestuia se incrementează
      * și rezultatul se identifică cu instrucțiunea. Dacă numele rezultatului este null, instrucțiunea nu produce
      * rezultat, ca în cazul celor de salt (BR) sau de precizare a valorii întoarse de o funcție (RET).

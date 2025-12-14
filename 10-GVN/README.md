@@ -163,8 +163,14 @@ Aplicând încă o rundă de numerotarea globală a valorilor, una de eliminare 
 
 Acesta conține încă instrucțiuni inutile, care ar putea fi eliminate (de exemplu, `if2.1 = COPY 5`), dar acestea vor fi discutate în laboratorul următor.
 
+Eliminarea codului neexecutabil se poate realiza în următoarele etape:
+
+1. Se determină dacă anumite **salturi condiționate** au **condiții constante**, caz în care salturile se înlocuiesc cu unele necondiționate către succesori unici.
+1. Se determină **blocurile executabile** printr-o parcurgere în adâncime a CFG-ului pornind de la blocul de intrare.
+1. Se elimină **blocurile neexecutabile**, i.e. care nu au fost marcate ca executabile în etapa 2. În cazul în care un bloc neexecutabil contribuie cu un operand la o **instrucțiune ϕ** dintr-un succesor, acea instrucțiune este rescrisă ca una **de copiere** a celuilalt operand.
+
 ## Cerințe
 
-1. Extindeți **numerotarea valorilor** dintr-un bloc cu tratamentul **instrucțiunilor ϕ**, completând metoda `process(BasicBlock)` din clasa `GlobalValueNumbering` din pachetul `optim`.
-1. Implementați **eliminarea codului neexcutabil**, completând clasa `UnreachableCodeElimination` din pachetul `optim`.
+1. Extindeți **numerotarea valorilor** dintr-un bloc cu tratamentul **instrucțiunilor ϕ**, supradefinind metoda `run(Instruction)` din clasa `GlobalValueNumbering` din pachetul `optim`. Clasa moștenește `ValueNumbering` din laboratorul anterior.
+1. Implementați **eliminarea codului neexcutabil**, completând clasa `UnreachableCodeElimination` din pachetul `optim`. Cele trei metode de implementat corespund celor trei etape de mai sus.
 1. **Rulați alternativ** runde ale celor două optimizări, reconstituind secvența de prelucrări din descrierea laboratorului.

@@ -19,3 +19,13 @@ Int f(Int n) {
 
     if a == 5 then a else a + 1 fi;
 };
+
+Int sum(Int n) {
+    Int s = 0;
+    Int i;
+
+    for i = 1, i <= n, i = i + 1 do
+        s = s + if i / 2 * 2 == i then i else 0 fi;
+
+    s;
+};

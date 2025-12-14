@@ -1,6 +1,5 @@
 package semantic;
 
-import lexer.CPLangLexer;
 import org.antlr.v4.runtime.Token;
 import parser.ASTNode;
 import parser.ASTVisitor;

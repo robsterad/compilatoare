@@ -1,12 +1,8 @@
 import java.io.IOException;
 
-import analysis.DominatorAnalysis;
-import analysis.DominatorTree;
-import analysis.GlobalConstantAnalysis;
-import analysis.LivenessAnalysis;
+import analysis.*;
 import irgen.IRGenVisitor;
 import irgen.SSATransformer;
-import lexer.CPLangLexer;
 import org.antlr.v4.runtime.*;
 import semantic.*;
 import parser.*;
@@ -71,28 +67,42 @@ public class Test {
         // CFG-ul funcției "f"
         var fCfg = irGenVisitor.functionSymbols.get("f").cfg;
 
+//        var postOrderNumbering = new PostOrderNumbering(fCfg);
+//        postOrderNumbering.computePostOrderNumbers();
+//        System.out.println(postOrderNumbering);
+
+//        for (var block : postOrderNumbering.reversePostOrder())
+//            System.out.println(block.getDisplayName() + ": " + postOrderNumbering.getReversePostOrderNumber(block));
+
+
 //        // Analiza globală a constantelor
 //        var fGlobalConstantAnalysis = new GlobalConstantAnalysis(fCfg);
 //        fGlobalConstantAnalysis.runForward();
-//        System.out.println(fGlobalConstantAnalysis);
+//        // System.out.println(fGlobalConstantAnalysis);
 
         // Analiza duratei de viață a valorilor
         var fLivenessAnalysis = new LivenessAnalysis(fCfg);
         fLivenessAnalysis.runBackwards();
 //        System.out.println(fLivenessAnalysis);
 
-        // Analiza de dominanță
-        var fDominatorAnalysis = new DominatorAnalysis(fCfg);
-        fDominatorAnalysis.runForward();
+//        // Analiza de dominanță
+//        var fDominatorAnalysis = new DominatorAnalysis(fCfg);
+//        fDominatorAnalysis.runForward();
 //        System.out.println(fDominatorAnalysis);
 
+        // Analiza de dominanță imediată
+        var fImmediateDominatorAnalysis = new ImmediateDominatorAnalysis(fCfg);
+        fImmediateDominatorAnalysis.runForward();
+//        System.out.println(fImmediateDominatorAnalysis);
+
         // Arborele de dominanță
-        var fDominatorTree = new DominatorTree(fDominatorAnalysis);
+        var fDominatorTree = new DominatorTree(fCfg);
+        fDominatorTree.computeDominanceFrontiers();
 //        System.out.println(fDominatorTree);
-//        fDominatorTree.toDOTFile("f-DT.dot");
+        fDominatorTree.toDOTFile("f-DT.dot");
 
         // Transformarea în forma SSA
-        var fSSATransformer = new SSATransformer(fDominatorTree, fLivenessAnalysis);
+        var fSSATransformer = new SSATransformer(fCfg);
         fSSATransformer.insertPhiInstructions();
         fSSATransformer.rename();
 
@@ -100,26 +110,36 @@ public class Test {
 
         String name = "f-SSA";
 
-        // TODO Continuați cu alte runde ale celor două optimizări de mai jos
-        for (int i = 1; i <= 1; i++) {
+        var globalValueNumbering = new GlobalValueNumbering(fCfg);
+        var unreachableCodeElimination = new UnreachableCodeElimination(fCfg);
+
+        // Aplicare repetată a optimizărilor de mai sus, până la absența modificărilor
+        int iterations = 0;
+        boolean gvnChanged, uceChanged = false;
+
+        do {
             // Numerotarea globală a valorilor
-            var globalValueNumbering = new GlobalValueNumbering(fCfg);
-            globalValueNumbering.propagate();
+            gvnChanged = globalValueNumbering.run();
 
-            name += "-GVN";
-            fCfg.toDOTFile(name + ".dot");
+            // Doar dacă s-a modificat ceva după prima optimizare, are rost să scriem un nou fișier și să încercăm
+            // și a doua optimizare
+            if (gvnChanged) {
+                iterations++;
 
-            // Eliminarea codului neexecutabil
-            var unreachableCodeElimination = new UnreachableCodeElimination(fCfg);
-            unreachableCodeElimination.processConditionalBranches();
-            unreachableCodeElimination.computeReachableBlocks();
-            unreachableCodeElimination.cleanup();
+                name += "-GVN";
+                fCfg.toDOTFile(name + ".dot");
 
-            name += "-UCE";
-            fCfg.toDOTFile(name + ".dot");
-        }
+                // Eliminarea codului neexecutabil
+                uceChanged = unreachableCodeElimination.run();
+
+                if (uceChanged) {
+                    name += "-UCE";
+                    fCfg.toDOTFile(name + ".dot");
+                }
+            }
+        } while (gvnChanged || uceChanged);
+
+        System.out.println("Finished after " + iterations + " iteration(s)");
     }
-
-
 
 }
