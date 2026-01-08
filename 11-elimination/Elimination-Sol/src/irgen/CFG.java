@@ -88,9 +88,6 @@ public class CFG {
             var temp = block.successors;
             block.successors = block.predecessors;
             block.predecessors = temp;
-
-            Collections.reverse(block.predecessors);
-            Collections.reverse(block.successors);
         }
 
         Collections.reverse(blocks);

@@ -2,11 +2,10 @@ package optim;
 
 import irgen.BasicBlock;
 import irgen.CFG;
-import irgen.InstructionType;
+
 import semantic.IntSymbol;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -26,7 +25,7 @@ public class UnreachableCodeElimination {
      * saltul cu unul necondiționat către unicul succesor valabil, înlătură ceilalți succesori ai blocului curent,
      * și înlătură blocul curent dintre predecesorii succesorilor eliminați.
      */
-    public void processConditionalBranches() {
+    protected void processConditionalBranches() {
         // Parcurgem toate blocurile
         for (var block : cfg.blocks) {
             // TODO Ne interesează doar dacă ultima instrucțiune este salt condiționat: BR conditie blocAdev blocFals
@@ -51,10 +50,15 @@ public class UnreachableCodeElimination {
 
     /**
      * Determină blocurile executabile, pornind de la blocul de intrare din CFG
+     *
+     * @return true, dacă au fost descoperite blocuri neexecutabile
      */
-    public void computeReachableBlocks() {
+    protected boolean computeReachableBlocks() {
         reachableBlocks.clear();
         computeReachableBlocks(cfg.blocks.getFirst());
+
+        // Dacă numărul blocurilor executabile diferă de cel total, înseamnă că există blocuri neexecutabile
+        return reachableBlocks.size() != cfg.blocks.size();
     }
 
     /**
@@ -78,26 +82,33 @@ public class UnreachableCodeElimination {
      * executabile în care mai intră un singur predecesor (în urma înlăturării predecesorilor neexecutabili) sunt
      * înlocuite cu instrucțiuni de copiere a versiunii furnizate de predecesorul rămas.
      */
-    public void cleanup() {
+    protected void removeUnreachableBlocks() {
         // TODO Păstrăm în CFG doar blocurile executabile
         cfg.blocks.retainAll(reachableBlocks);
 
         // TODO Parcurgem blocurile executabile
         for (var block : cfg.blocks) {
-            // TODO Dacă blocul curent are predecesori neexecutabili, îi înlăturăm din lista de predecesori
-            block.predecessors.removeIf(predecessor -> ! reachableBlocks.contains(predecessor));
-
-            // TODO Pentru blocurile cu un singur predecesor, verificăm dacă există instrucțiuni ϕ, de pe vremea când
-            //  blocul avea mai mulți predecesori, și le înlocuim cu instrucțiuni de copiere a singurului operand valid
-            if (block.predecessors.size() == 1)
-                for (var instruction : block.instructions) {
-                    if (instruction.iType == InstructionType.PHI) {
-                        var predecessorIndex = instruction.operands.indexOf(block.predecessors.getFirst());
-
-                        instruction.iType = InstructionType.COPY;
-                        instruction.operands = List.of(instruction.operands.get(predecessorIndex - 2));
-                    }
-                }
+            // TODO Dacă blocul curent are predecesori neexecutabili, distrugem legăturile
+            block.predecessors.stream()
+                    .filter(predecessor -> ! reachableBlocks.contains(predecessor))
+                    .toList()
+                    .forEach(predecessor -> predecessor.removeSuccessor(block));
         }
+    }
+
+    /**
+     * Rulează cele trei etape.
+     *
+     * @return true, dacă s-a modificat CFG-ul
+     */
+    public boolean run() {
+        processConditionalBranches();
+        var hasUnreachableBlocks = computeReachableBlocks();
+
+        // Dacă în a doua etapă au fost depistate blocuri neexecutabile, rulăm și a treia etapă
+        if (hasUnreachableBlocks)
+            removeUnreachableBlocks();
+
+        return hasUnreachableBlocks;
     }
 }

@@ -1,6 +1,5 @@
 package optim;
 
-import analysis.DominatorAnalysis;
 import analysis.DominatorTree;
 import irgen.BasicBlock;
 import irgen.CFG;
@@ -24,7 +23,7 @@ public class UselessCodeElimination {
      * Blocurile marcate ca utile, pe baza instrucțiunilor pe utile care le conțin. Înlesnește determinarea facilă a
      * primului postdominator util al unui bloc
      */
-    protected Set<BasicBlock> usefulBlocks = new HashSet<>();
+    public Set<BasicBlock> usefulBlocks = new HashSet<>();
 
     /**
      * Coada de instrucțiuni ce urmează a fi procesate prin prisma utilității
@@ -48,13 +47,11 @@ public class UselessCodeElimination {
         usefulBlocks.clear();
         instructionQueue.clear();
 
-        // Arborele de postdominare este arborele de dominare al CFG-ului inversat (cu arcele inversate)
+        // Arborele de postdominanță este arborele de dominanță al CFG-ului inversat (cu arcele inversate)
         cfg.reverse();
 
-        var postDominatorAnalysis = new DominatorAnalysis(cfg);
-        postDominatorAnalysis.runForward();
-
-        postDominatorTree = new DominatorTree(postDominatorAnalysis);
+        postDominatorTree = new DominatorTree(cfg);
+        postDominatorTree.computeDominanceFrontiers();
 
         cfg.reverse();
 
@@ -91,8 +88,13 @@ public class UselessCodeElimination {
 
     /**
      * Simplifică CFG-ul, eliminând sau rescriind instrucțiunile inutile
+     *
+     * @return true, dacă au fost identificate instrucțiuni inutile
      */
-    public void cleanup() {
+    public boolean removeUselessInstructions() {
+        // Presupunem că nu se va schimba nimic
+        var changed = false;
+
         // Parcurgem toate blocurile
         for (var block : cfg.blocks)
             // Parcurgem instrucțiunile din blocul curent. Utilizăm un iterator pentru a putea șterge instrucțiuni pe
@@ -100,8 +102,8 @@ public class UselessCodeElimination {
             for (var it = block.instructions.iterator(); it.hasNext(); ) {
                 var instruction = it.next();
 
-                // Dacă instrucțiunea este utilă, nu ne atingem de ea
-                if (usefulInstructions.contains(instruction))
+                // Dacă instrucțiunea este de salt necondiționat sau a fost marcată ca utilă, nu ne atingem de ea
+                if (instruction.isUnconditionalBranch() || usefulInstructions.contains(instruction))
                     continue;
 
                 // TODO Un salt condiționat inutil trebuie rescris ca unul necondiționat către cel mai apropiat
@@ -118,11 +120,25 @@ public class UselessCodeElimination {
                     //  Vedeți metoda BasicBlock.setUniqueSuccesor(BasicBlock).
                     block.setUniqueSuccessor(postDominator);
                 }
-
                 // TODO Orice altă instrucțiune inutilă diferită de un salt este eliminată
-                if (instruction.iType != InstructionType.BR)
+                else
                     it.remove();
+
+                // Marcăm schimbarea
+                changed = true;
             }
+
+        return changed;
+    }
+
+    /**
+     * Rulează cele două etape
+     *
+     * @return true, dacă CFG-ul s-a modificat
+     */
+    public boolean run() {
+        computeUsefulInstructions();
+        return removeUselessInstructions();
     }
 
     /**

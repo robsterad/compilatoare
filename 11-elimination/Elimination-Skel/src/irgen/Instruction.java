@@ -137,12 +137,21 @@ public class Instruction extends IdSymbol {
     }
 
     /**
+     * Verifică dacă instrucțiunea curentă reprezintă un salt (condiționat sau necondiționat).
+     *
+     * @return true, în caz afirmativ
+     */
+    public boolean isBranch() {
+        return iType == InstructionType.BR;
+    }
+
+    /**
      * Verifică dacă instrucțiunea curentă reprezintă un salt condiționat.
      *
      * @return true, în caz afirmativ
      */
     public boolean isConditionalBranch() {
-        return iType == InstructionType.BR && operands.size() == 3;
+        return isBranch() && operands.size() == 3;
     }
 
     /**
@@ -151,7 +160,7 @@ public class Instruction extends IdSymbol {
      * @return true, în caz afirmativ
      */
     public boolean isUnconditionalBranch() {
-        return iType == InstructionType.BR && operands.size() == 1;
+        return isBranch() && operands.size() == 1;
     }
 
     /**
@@ -172,6 +181,34 @@ public class Instruction extends IdSymbol {
 
         // Celelalte instrucțiuni se identifică cu rezultatul
         return this;
+    }
+
+    /**
+     * Pentru o instrucțiune ϕ, determină indexul din cadrul listei de operanzi a unui bloc, pornind de la indexul
+     * valorii care provine din acel bloc.
+     *
+     * @param  valueIndex indexul valorii
+     * @return            indexul blocului
+     */
+    public int getPhiBlockIndex(int valueIndex) {
+        if (iType != InstructionType.PHI)
+            throw new UnsupportedOperationException();
+
+        return valueIndex + operands.size() / 2;
+    }
+
+    /**
+     * Pentru o instrucțiune ϕ, determină indexul din cadrul listei de operanzi a unei valori, pornind de la indexul
+     * blocului din care provine acea valoare.
+     *
+     * @param  blockIndex indexul blocului
+     * @return            indexul valorii
+     */
+    public int getPhiValueIndex(int blockIndex) {
+        if (iType != InstructionType.PHI)
+            throw new UnsupportedOperationException();
+
+        return blockIndex - operands.size() / 2;
     }
 
     /**

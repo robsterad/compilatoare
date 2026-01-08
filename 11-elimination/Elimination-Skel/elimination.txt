@@ -1,0 +1,58 @@
+Int f(Int n) {
+    Int s = 0;
+    Int i;
+    Int a = 5;
+
+    for i = 1, i <= n, i = i + 1 do {
+        print_int(a);
+
+        Int b = n;
+        Int c = n;
+
+        // Încercați și { b = c = n; 1; } pe ramura else
+        s = if i / 2 * 2 == i then 1 else { b = c = i; 1; } fi;
+
+        if s == 1 then a = 5 else a = 10 fi;
+
+        print_int(b);
+        print_int(c);
+    };
+
+    if a == 5 then a else a + 1 fi;
+};
+
+Int sum(Int n) {
+    Int s = 0;
+    Int i;
+
+    for i = 1, i <= n, i = i + 1 do
+        s = s + if i / 2 * 2 == i then i else 0 fi;
+
+    s;
+};
+
+Int removeEmptyBlock(Int n) {
+    Int x;
+
+    if n < 10
+        then { x = n + 3; if n < 5 then print_int(1) else print_int(2) fi; x; }
+        else x = 4
+    fi;
+};
+
+Int removeEmptyBlockPhi(Int n) {
+    Int x;
+
+    if n < 10
+        then if n < 5 then x = 1 else x = 2 fi
+        else x = 3
+    fi;
+};
+
+Int hoistBranch(Int n) {
+    Bool b = n < 10;
+
+    if n < 5 then print_int(1) else print_int(2) fi;
+
+    if b then 1 else 2 fi;
+};

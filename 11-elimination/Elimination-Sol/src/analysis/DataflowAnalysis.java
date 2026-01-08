@@ -50,6 +50,11 @@ public abstract class DataflowAnalysis<I> {
      */
     public CFG cfg;
 
+    /**
+     * Numerotarea blocurilor
+     */
+    protected PostOrderNumbering postOrderNumbering;
+
     // Nu vor exista instanțe duplicat pentru același basic block, deci accesarea colecției se poate face
     // pe baza referinței (IdentityHashMap)
 
@@ -71,6 +76,9 @@ public abstract class DataflowAnalysis<I> {
 
     public DataflowAnalysis(CFG cfg) {
         this.cfg = cfg;
+
+        postOrderNumbering = new PostOrderNumbering(cfg);
+        postOrderNumbering.computePostOrderNumbers();
     }
 
     /**
@@ -175,8 +183,7 @@ public abstract class DataflowAnalysis<I> {
      * blocul inițial, informația anterioară/ulterioară transferului, vecinii blocului curent, și ordinea de parcurgere
      * a instrucțiunilor dintr-un bloc au semnificații diferite, ele sunt primite ca parametri.
      *
-     * @param startBlock        blocul de pornire a analizei
-     * @param otherBlocks       celelalte blocuri, mai puțin cel de pornire
+     * @param blocks            blocurile, în ordinea în care ar trebui parcurse eficient
      * @param blockPreInfos     map cu informații ale blocurilor, anterioare transferului
      * @param blockPostInfos    map cu informații ale blocurilor, ulterioare transferului
      * @param getNeighbors      funcție care determină vecinii unui bloc
@@ -185,8 +192,7 @@ public abstract class DataflowAnalysis<I> {
      * @see   #runBackwards()
      */
     protected void run(
-            BasicBlock startBlock,
-            List<BasicBlock> otherBlocks,
+            SequencedSet<BasicBlock> blocks,
             Map<BasicBlock, I> blockPreInfos,
             Map<BasicBlock, I> blockPostInfos,
             Function<BasicBlock, List<BasicBlock>> getNeighbors,
@@ -194,6 +200,12 @@ public abstract class DataflowAnalysis<I> {
     ) {
         var startInfo = getStartBlockInitialInfo();
         var otherInfo = getOtherBlocksInitialInfo();
+
+        // Separăm primul bloc de celelalte, întrucât pentru primul bloc se inițializează diferit informația,
+        // și este prelucrat o singură dată.
+        var startBlock = blocks.getFirst();
+        var otherBlocks = new LinkedHashSet<>(blocks);
+        otherBlocks.removeFirst();
 
         // Pentru blocul de pornire, informația anterioară transferului este furnizată de metoda
         // getStartBlockInitialInfo(), iar cea ulterioară transferului se obține apelând funcția de transfer la nivel
@@ -203,9 +215,9 @@ public abstract class DataflowAnalysis<I> {
 
         // Toate celelalte blocuri sunt adnotate atât la intrare, cât și la ieșire, cu informația furnizată de metoda
         // getOtherBlocksInitialInfo()
-        for (var otherBlock : otherBlocks) {
-            blockPreInfos.put(otherBlock, otherInfo);
-            blockPostInfos.put(otherBlock, otherInfo);
+        for (var block : otherBlocks) {
+            blockPreInfos.put(block, otherInfo);
+            blockPostInfos.put(block, otherInfo);
         }
 
         // Algoritmul iterativ de punct fix, care se oprește odată ce changed rămâne false la finalul unei iterații
@@ -244,17 +256,14 @@ public abstract class DataflowAnalysis<I> {
      * Funcția de propagare a informației pentru analizele forward.
      */
     public void runForward() {
-        var blocks = cfg.blocks;
-        // Un număr redus de iterații se obține ordonând celelalte blocuri (parametrul 2 al metodei run()) conform
-        // unei traversări reverse post-order a CFG-ului. Aici este păstrată ordinea preexistentă din CFG pentru
-        // simplitate, dar acest lucru nu afectează corectitudinea.
+        // Un număr redus de iterații se obține ordonând blocurile conform unei traversări în post-ordine inversă
+        // a CFG-ului.
         run(
-                blocks.getFirst(),                // Blocul de pornire este cel de intrare
-                blocks.subList(1, blocks.size()), // Celelalte blocuri îl exclud pe cel de pornire
-                blockInInfos,                     // Informația anterioară transferurilor este la intrarea în blocuri (in)
-                blockOutInfos,                    // Informația ulterioară transferurilor este la ieșirea din blocuri (out)
-                block -> block.predecessors,      // Vecinii de la care blocul curent primește informație sunt predecesorii
-                UnaryOperator.identity()          // Ordinea de parcurgere a instrucțiunilor din bloc este cea naturală
+                postOrderNumbering.reversePostOrder(),  // Mulțimea blocurilor, în ordinea de mai sus
+                blockInInfos,                           // Informația anterioară transferurilor este la intrarea în blocuri (in)
+                blockOutInfos,                          // Informația ulterioară transferurilor este la ieșirea din blocuri (out)
+                block -> block.predecessors,            // Vecinii de la care blocul curent primește informație sunt predecesorii
+                UnaryOperator.identity()                // Ordinea de parcurgere a instrucțiunilor din bloc este cea naturală
         );
     }
 
@@ -262,17 +271,13 @@ public abstract class DataflowAnalysis<I> {
      * Funcția de propagare a informației pentru analizele backwards
      */
     public void runBackwards() {
-        var blocks = cfg.blocks;
-        // Un număr redus de iterații se obține ordonând celelalte blocuri (parametrul 2 al metodei run()) conform
-        // unei traversări reverse post-order a CFG-ului cu muchiile inversate. Aici este păstrată ordinea preexistentă
-        // din CFG pentru simplitate, dar acest lucru nu afectează corectitudinea.
+        // Un număr redus de iterații se obține ordonând blocurile conform unei traversări în post-ordine a CFG-ului.
         run(
-                blocks.getLast(),                     // Blocul de pornire este cel de ieșire
-                blocks.subList(0, blocks.size() - 1), // Celelalte blocuri îl exclud pe cel de pornire
-                blockOutInfos,                        // Informația anterioară transferurilor este la ieșirea din blocuri (out)
-                blockInInfos,                         // Informația ulterioară transferurilor este la intrarea în blocuri (in)
-                block -> block.successors,            // Vecinii de la care blocul curent primește informație sunt succesorii
-                List::reversed                        // Ordinea de parcurgere a instrucțiunilor din bloc este inversată
+                postOrderNumbering.postOrder(),  // Mulțimea blocurilor, în ordinea de mai sus
+                blockOutInfos,                   // Informația anterioară transferurilor este la ieșirea din blocuri (out)
+                blockInInfos,                    // Informația ulterioară transferurilor este la intrarea în blocuri (in)
+                block -> block.successors,       // Vecinii de la care blocul curent primește informație sunt succesorii
+                List::reversed                   // Ordinea de parcurgere a instrucțiunilor din bloc este inversată
         );
     }
 

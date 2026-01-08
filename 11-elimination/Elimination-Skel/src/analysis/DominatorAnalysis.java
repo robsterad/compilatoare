@@ -14,10 +14,15 @@ import java.util.stream.Collectors;
 
 /**
  * Analiză clasică forward pentru determinarea mulțimii de dominatori ai fiecărui bloc. Este utilizată pentru
- * construcția eficientă a formei SSA.
+ * construcția formei SSA minimale.
  *
  * Un bloc D domină un bloc B dacă toate căile de la blocul de intrare din CFG către B trec prin D. Fiecare bloc
  * se domină pe sine. Un bloc D domină *strict* un alt bloc B, dacă îl domină fără a fi egal cu el (D != B).
+ *
+ * Deși simplă și intuitivă, analiza bazată pe mulțimi de dominatori este ineficientă, deoarece presupune inițializarea
+ * mulțimilor de dominatori (cu excepția celei aferente blocului de intrare) cu mulțimea tuturor nodurilor din CFG,
+ * și apoi intersectarea unor mulțimi potențial mari. Vedeți clasa ImmediateDominatorAnalysis pentru o analiză
+ * mai eficientă, bazată pe dominatori imediați.
  *
  * Informația pentru adnotare este o mulțime de blocuri.
  */
