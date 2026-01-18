@@ -1,0 +1,46 @@
+TERMINAL RULES
+terminal rule "1", cost 0: immediate -> LITERAL
+terminal rule "2", cost 1: register -> LITERAL
+terminal rule "3", cost 0: register -> NAME
+
+OPERATOR RULES
+operator rule "4", cost 1: register -> ADD register register
+operator rule "5", cost 1: register -> ADD register immediate
+operator rule "6", cost 1: register -> ADD immediate register
+operator rule "7", cost 0: address -> ADD register immediate
+operator rule "8", cost 0: address -> ADD immediate register
+operator rule "9", cost 2: register -> LOAD register
+operator rule "10", cost 2: register -> LOAD address
+
+a = ADD x 4
+b = LOAD a
+c = ADD b y
+
+TILING:
+4
+	REGISTER
+		terminal rule "2" instance, cost 1: register(regLit) -> LITERAL(4) => [li regLit 4]
+	IMMEDIATE
+		terminal rule "1" instance, cost 0: immediate(4) -> LITERAL(4) => []
+x
+	REGISTER
+		terminal rule "3" instance, cost 0: register(x) -> NAME(x) => []
+y
+	REGISTER
+		terminal rule "3" instance, cost 0: register(y) -> NAME(y) => []
+c
+	REGISTER
+		operator rule "4" instance, cost 3: register(c) -> ADD register(b) register(y) => local: [add c b y] / global: [lw b 4(x), add c b y]
+		operator rule "4" instance, cost 4: register(c) -> ADD register(b) register(y) => local: [add c b y] / global: [addi a x 4, lw b 0(a), add c b y]
+		operator rule "4" instance, cost 5: register(c) -> ADD register(b) register(y) => local: [add c b y] / global: [li regLit 4, add a x regLit, lw b 0(a), add c b y]
+a
+	ADDRESS
+		operator rule "7" instance, cost 0: address(a) -> ADD register(x) immediate(4) => local: [] / global: []
+	REGISTER
+		operator rule "5" instance, cost 1: register(a) -> ADD register(x) immediate(4) => local: [addi a x 4] / global: [addi a x 4]
+		operator rule "4" instance, cost 2: register(a) -> ADD register(x) register(regLit) => local: [add a x regLit] / global: [li regLit 4, add a x regLit]
+b
+	REGISTER
+		operator rule "10" instance, cost 2: register(b) -> LOAD address(a) => local: [lw b 4(x)] / global: [lw b 4(x)]
+		operator rule "9" instance, cost 3: register(b) -> LOAD register(a) => local: [lw b 0(a)] / global: [addi a x 4, lw b 0(a)]
+		operator rule "9" instance, cost 4: register(b) -> LOAD register(a) => local: [lw b 0(a)] / global: [li regLit 4, add a x regLit, lw b 0(a)]

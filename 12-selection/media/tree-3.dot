@@ -1,0 +1,14 @@
+digraph CFG {
+    node [shape=record, fontname="Courier New"]
+    c [label=<{<B>4(3) reg</B>|c : ADD}>]
+    b [label=<{<B>10(2) reg</B>|b : LOAD}>]
+    y [label=<{<B>3(0) reg</B>|y}>]
+    a [label=<{<B>7(0) addr</B>|a : ADD}>]
+    x [label=<{<B>3(0) reg</B>|x}>]
+    4 [label=<{<B>1(0) imm</B>|4}>]
+    c -> b
+    c -> y
+    b -> a
+    a -> x
+    a -> 4
+}
