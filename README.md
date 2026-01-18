@@ -11,6 +11,7 @@
 1. Optimizări 1 - Cod intermediar. Numerotarea valorilor
 1. Optimizări 2 - Numerotarea globală a valorilor. Eliminarea codului neexecutabil
 1. Optimizări 3 - Eliminarea codului și a fluxului de control inutile
+1. Selecția instrucțiunilor țintă pe baza codului intermediar
 
 Scheletele conțin porțiuni de cod adaptate din:
 
