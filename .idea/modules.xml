@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/04-AST/AST-skel/AST-skel.iml" filepath="$PROJECT_DIR$/04-AST/AST-skel/AST-skel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/04-AST/AST-sol/AST-sol.iml" filepath="$PROJECT_DIR$/04-AST/AST-sol/AST-sol.iml" />
+      <module fileurl="file://$PROJECT_DIR$/08-asmgen/AsmGen-skel/AsmGen-skel.iml" filepath="$PROJECT_DIR$/08-asmgen/AsmGen-skel/AsmGen-skel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/08-asmgen/AsmGen-sol/AsmGen-sol.iml" filepath="$PROJECT_DIR$/08-asmgen/AsmGen-sol/AsmGen-sol.iml" />
+      <module fileurl="file://$PROJECT_DIR$/11-elimination/Elimination-Skel/Elimination-Skel.iml" filepath="$PROJECT_DIR$/11-elimination/Elimination-Skel/Elimination-Skel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/11-elimination/Elimination-Sol/Elimination-Sol.iml" filepath="$PROJECT_DIR$/11-elimination/Elimination-Sol/Elimination-Sol.iml" />
+      <module fileurl="file://$PROJECT_DIR$/10-GVN/GVN-Skel/GVN-Skel.iml" filepath="$PROJECT_DIR$/10-GVN/GVN-Skel/GVN-Skel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/10-GVN/GVN-Sol/GVN-Sol.iml" filepath="$PROJECT_DIR$/10-GVN/GVN-Sol/GVN-Sol.iml" />
+      <module fileurl="file://$PROJECT_DIR$/09-LVN/LVN-Skel/LVN-Skel.iml" filepath="$PROJECT_DIR$/09-LVN/LVN-Skel/LVN-Skel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/09-LVN/LVN-Sol/LVN-Sol.iml" filepath="$PROJECT_DIR$/09-LVN/LVN-Sol/LVN-Sol.iml" />
+      <module fileurl="file://$PROJECT_DIR$/02-lexer/Lexer-skel/Lexer-skel.iml" filepath="$PROJECT_DIR$/02-lexer/Lexer-skel/Lexer-skel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/02-lexer/Lexer-sol/Lexer-sol.iml" filepath="$PROJECT_DIR$/02-lexer/Lexer-sol/Lexer-sol.iml" />
+      <module fileurl="file://$PROJECT_DIR$/03-parser/Parser-skel/Parser-skel.iml" filepath="$PROJECT_DIR$/03-parser/Parser-skel/Parser-skel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/03-parser/Parser-sol/Parser-sol.iml" filepath="$PROJECT_DIR$/03-parser/Parser-sol/Parser-sol.iml" />
+      <module fileurl="file://$PROJECT_DIR$/12-selection/Selection-Skel/Selection-Skel.iml" filepath="$PROJECT_DIR$/12-selection/Selection-Skel/Selection-Skel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/12-selection/Selection-Sol/Selection-Sol.iml" filepath="$PROJECT_DIR$/12-selection/Selection-Sol/Selection-Sol.iml" />
+      <module fileurl="file://$PROJECT_DIR$/05-symbols/Symbols-Skel/Symbols-Skel.iml" filepath="$PROJECT_DIR$/05-symbols/Symbols-Skel/Symbols-Skel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/05-symbols/Symbols-Sol/Symbols-Sol.iml" filepath="$PROJECT_DIR$/05-symbols/Symbols-Sol/Symbols-Sol.iml" />
+      <module fileurl="file://$PROJECT_DIR$/06-types/Types-Skel/Types-Skel.iml" filepath="$PROJECT_DIR$/06-types/Types-Skel/Types-Skel.iml" />
+      <module fileurl="file://$PROJECT_DIR$/06-types/Types-Sol/Types-Sol.iml" filepath="$PROJECT_DIR$/06-types/Types-Sol/Types-Sol.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/laboratoare.iml" filepath="$PROJECT_DIR$/.idea/laboratoare.iml" />
+    </modules>
+  </component>
+</project>

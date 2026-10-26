@@ -10,12 +10,29 @@
 *)
 class Fibo {
     fibo_rec(n : Int) : Int {
-        0
+        if (n<=1) then n else fibo_rec(n-1)+fibo_rec(n-2) fi
     };
 
     fibo_iter(n : Int) : Int {
-        0
+        if n <= 1 then
+            n
+        else
+            let nr1 : Int <- 0,
+                nr2 : Int <- 1
+            in {
+                while not (n = 0) loop
+                    {
+                        nr2 <- nr2 + nr1;
+                        nr1 <- nr2 - nr1;
+                        n <- n - 1;
+                    }
+                pool;
+
+                nr2;
+            }
+        fi
     };
+
 };
     
 (*
@@ -58,6 +75,15 @@ class List inherits IO {
     };
 
     print() : IO { out_string("\n") };
+
+    append(l : List) : List {
+        l
+        };
+
+        reverse() : List {
+            new List
+        };
+
 };
 
 (*
@@ -95,6 +121,20 @@ class Cons inherits List {
             tl.print();
         }
     };
+
+
+        append(l : List) : List {
+            new Cons.init(hd, tl.append(l))
+        };
+
+        -- reverse(hd : tl)
+        -- = reverse(tl) ++ [hd]
+        reverse() : List {
+            tl.reverse().append(
+                (new List).cons(hd)
+            )
+        };
+
 };
 
 (*
@@ -126,25 +166,30 @@ class Cons inherits List {
 -- Testați în main.
 class Main inherits IO {
     main() : Object {
-        let list : List <- new List.cons(1).cons(2).cons(3),
-            temp : List <- list
-        in
-            {
-                -- Afișare utilizând o buclă while. Mecanismul de dynamic
-                -- dispatch asigură alegerea implementării corecte a metodei
-                -- isEmpty, din clasele List, respectiv Cons.
-                while (not temp.isEmpty()) loop
-                    {
-                        out_int(temp.hd());
-                        out_string(" ");
-                        temp <- temp.tl();
-                    }
-                pool;
+            let l1 : List <- new List.cons(1).cons(2).cons(3),
+                l2 : List <- new List.cons(4).cons(5),
+                l3 : List,
+                l4 : List
+            in {
+                out_string("l1 = ");
+                l1.print();
 
-                out_string("\n");
+                out_string("l2 = ");
+                l2.print();
 
-                -- Afișare utilizând metoda din clasele pe liste.
-                list.print();
+                l3 <- l1.append(l2);
+                out_string("l1.append(l2) = ");
+                l3.print();
+
+                l4 <- l1.reverse();
+                out_string("l1.reverse() = ");
+                l4.print();
+
+                out_string("l1 dupa operatii = ");
+                l1.print();
+
+                out_string("l2 dupa operatii = ");
+                l2.print();
             }
-    };
+        };
 };
