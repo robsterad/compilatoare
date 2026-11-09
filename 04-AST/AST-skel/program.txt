@@ -1,0 +1,26 @@
+// Program care acopera toate constructiile din AST
+Int n = 10;
+Float f = .5e2;
+Bool ok = true;
+Bool no;
+
+Int zero() { 0; };
+
+Float media(Int a, Int b, Float w) {
+    Float s = (a + b) * w;
+    s / 2.0;
+};
+
+Int abs(Int x) {
+    if x < 0 then -x else x fi;
+};
+
+Bool test = -n + 3 <= abs(-7) * (2 - 1);
+
+for n = 0, n < 3, n = n + 1 do {
+    Int k = if ok == false then 1 else zero() fi;
+    print_int(k - n / 2);
+};
+
+print_float(media(n, 4, f));
+{ Int t = 1; { t = t + 1; }; t; };

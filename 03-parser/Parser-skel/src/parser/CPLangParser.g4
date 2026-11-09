@@ -24,7 +24,26 @@ prog
  *      type name (type name_formal1, type name_formal2, ..) block
  */
 definition
-    :    // ...
+    :   TYPE ID (ASSIGN expr)?                                      # varDef
+    |   TYPE ID LPAREN (formal (COMMA formal)*)? RPAREN block       # funcDef
+    ;
+
+/* Parametru formal al unei funcții: type name
+ */
+formal
+    :   TYPE ID
+    ;
+
+/* Definiție de variabilă locală, în interiorul unui bloc.
+ */
+local
+    :   TYPE ID (ASSIGN expr)?
+    ;
+
+/* Bloc: secvență de definiții locale și expresii, fiecare terminată cu ;
+ */
+block
+    :   LBRACE ((local | expr) SEMI)* RBRACE
     ;
 
 /* Expresie.
@@ -70,9 +89,22 @@ definition
  * 
  * TODO 1: Completează gramatica pentru regulile de mai sus.
  */
+/* Ordinea alternativelor dă prioritatea operatorilor: cu cât o alternativă
+ * apare mai sus, cu atât are prioritate mai mare.
+ */
 expr
-    :   IF cond=expr THEN thenBranch=expr ELSE elseBranch=expr FI   # if
+    :   name=ID LPAREN (expr (COMMA expr)*)? RPAREN                 # call
+    |   MINUS expr                                                  # unaryMinus
+    |   left=expr op=(MULT | DIV) right=expr                        # multDiv
+    |   left=expr op=(PLUS | MINUS) right=expr                      # plusMinus
+    |   left=expr op=(LT | LE | EQUAL) right=expr                   # relational
+    |   IF cond=expr THEN thenBranch=expr ELSE elseBranch=expr FI   # if
+    |   FOR init=expr COMMA cond=expr COMMA step=expr DO body=expr  # for
+    |   name=ID ASSIGN expr                                         # assign
     |   ID                                                          # id
     |   INT                                                         # int
-    // ...
+    |   FLOAT                                                       # float
+    |   BOOL                                                        # bool
+    |   LPAREN expr RPAREN                                          # paren
+    |   block                                                       # blockExpr
     ;

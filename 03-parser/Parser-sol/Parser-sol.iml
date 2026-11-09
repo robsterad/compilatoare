@@ -7,21 +7,5 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="AST-sol" />
-    <orderEntry type="module" module-name="Types-Skel" />
-    <orderEntry type="module" module-name="GVN-Sol" />
-    <orderEntry type="module" module-name="AST-skel" />
-    <orderEntry type="module" module-name="GVN-Skel" />
-    <orderEntry type="module" module-name="AsmGen-skel" />
-    <orderEntry type="module" module-name="Symbols-Skel" />
-    <orderEntry type="module" module-name="Types-Sol" />
-    <orderEntry type="module" module-name="Symbols-Sol" />
-    <orderEntry type="module" module-name="Selection-Sol" />
-    <orderEntry type="module" module-name="Elimination-Skel" />
-    <orderEntry type="module" module-name="Elimination-Sol" />
-    <orderEntry type="module" module-name="Selection-Skel" />
-    <orderEntry type="module" module-name="LVN-Skel" />
-    <orderEntry type="module" module-name="AsmGen-sol" />
-    <orderEntry type="module" module-name="LVN-Sol" />
   </component>
 </module>

@@ -8,7 +8,9 @@ import parser.*;
 public class Test {
 
     public static void main(String[] args) throws IOException {
-        var input = CharStreams.fromFileName("if.txt");
+        // Fișierul de intrare poate fi dat ca argument (ex: manual.txt, pentru
+        // comparare cu reference.txt); implicit se folosește program.txt.
+        var input = CharStreams.fromFileName(args.length > 0 ? args[0] : "manual.txt");
 
         var lexer = new CPLangLexer(input);
         var tokenStream = new CommonTokenStream(lexer);
@@ -26,7 +28,7 @@ public class Test {
 
         var parser = new CPLangParser(tokenStream);
         // schimbati regula de start in "prog" pentru a testa un program CPLang complet
-        var tree = parser.expr();
+        var tree = parser.prog();
         System.out.println(tree.toStringTree(parser));
 
         // Visitor-ul de mai jos parcurge arborele de derivare și construiește
@@ -48,6 +50,7 @@ public class Test {
         // constructii definite in laboratorul de astazi. Scrieti codul CPLang
         // intr-un fisier txt si modificati fisierul de input de la inceputul
         // metodei 'main'
+        // -> vezi program.txt
 
         System.out.println("The AST is");
         ast.accept(printVisitor);

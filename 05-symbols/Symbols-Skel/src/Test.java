@@ -11,7 +11,9 @@ public class Test {
         /*
          TODO 3: Schimbați la bad_input.txt.
          */
-        var input = CharStreams.fromFileName("manual.txt");
+        // Fișierul de intrare poate fi dat ca argument (ex: manual.txt);
+        // implicit se folosește bad_input.txt.
+        var input = CharStreams.fromFileName(args.length > 0 ? args[0] : "bad_input.txt");
 
         var lexer = new CPLangLexer(input);
         var tokenStream = new CommonTokenStream(lexer);

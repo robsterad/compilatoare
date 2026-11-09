@@ -8,5 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="AsmGen-sol" />
+    <orderEntry type="library" exported="" name="antlr-4.13.0-complete" level="project" />
   </component>
 </module>

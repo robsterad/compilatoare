@@ -46,6 +46,12 @@ public class ResolutionPassVisitor implements ASTVisitor<Void> {
     public Void visit(ASTNode.Assign assign) {
         // TODO 3: Verificăm dacă membrul din stânga este într-adevăr
         // o variabilă sau este o funcție, fiind eroare. Puteți folosi instanceof.
+        var id = assign.id;
+
+        if (id.getSymbol() instanceof FunctionSymbol) {
+            ASTVisitor.error(id.getToken(), id.getToken().getText() + " is not a variable");
+            return null;
+        }
 
         assign.id.accept(this);
         assign.expr.accept(this);
@@ -80,6 +86,20 @@ public class ResolutionPassVisitor implements ASTVisitor<Void> {
         //
         // Hint: pentru a obține scope-ul, putem folosi call.id.getScope(),
         // setat la trecerea anterioară.
+        var id = call.id;
+        var symbol = id.getScope().lookup(id.getToken().getText());
+
+        if (symbol == null) {
+            ASTVisitor.error(id.getToken(), id.getToken().getText() + " function undefined");
+        } else if (!(symbol instanceof FunctionSymbol)) {
+            ASTVisitor.error(id.getToken(), id.getToken().getText() + " is not a function");
+        } else {
+            id.setSymbol((FunctionSymbol) symbol);
+        }
+
+        for (var arg : call.args) {
+            arg.accept(this);
+        }
 
         return null;
     }

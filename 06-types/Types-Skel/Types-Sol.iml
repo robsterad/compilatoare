@@ -7,7 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library">
+    <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
           <root url="jar://D:/Lab2/antlr-4.13.0-complete.jar!/" />
@@ -16,6 +16,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="antlr-4.13.0-complete" level="project" />
+    <orderEntry type="library" exported="" name="antlr-4.13.0-complete" level="project" />
   </component>
 </module>

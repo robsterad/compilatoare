@@ -39,7 +39,7 @@ public class Test {
         var parser = readFromFile("manual.txt");
 
         /* TODO 1: înlocuiește expr cu regula de start din gramatică. */
-        var tree = parser.expr();
+        var tree = parser.prog();
         System.out.println(tree.toStringTree(parser));
 
     }
@@ -54,7 +54,7 @@ public class Test {
         var parser = readFromFile("input2.txt");
 
         // TODO 2: înlocuiește `expr` cu regula de start.
-        var tree = parser.expr();
+        var tree = parser.prog();
 
         Scanner s = new Scanner(new File("reference2.txt"));
         ArrayList<Integer> reference = new ArrayList<>();
@@ -103,7 +103,36 @@ public class Test {
             //  literalilor întregi, operației minus-unar, operațiilor aritmetice
             //  binare și expresiilor parantezate.
 
-            // ...
+            @Override
+            public Integer visitInt(CPLangParser.IntContext ctx) {
+                return Integer.parseInt(ctx.INT().getText());
+            }
+
+            @Override
+            public Integer visitUnaryMinus(CPLangParser.UnaryMinusContext ctx) {
+                return -visit(ctx.expr());
+            }
+
+            @Override
+            public Integer visitMultDiv(CPLangParser.MultDivContext ctx) {
+                int left = visit(ctx.left);
+                int right = visit(ctx.right);
+
+                return ctx.op.getType() == CPLangLexer.MULT ? left * right : left / right;
+            }
+
+            @Override
+            public Integer visitPlusMinus(CPLangParser.PlusMinusContext ctx) {
+                int left = visit(ctx.left);
+                int right = visit(ctx.right);
+
+                return ctx.op.getType() == CPLangLexer.PLUS ? left + right : left - right;
+            }
+
+            @Override
+            public Integer visitParen(CPLangParser.ParenContext ctx) {
+                return visit(ctx.expr());
+            }
         };
 
         visitor.visit(tree);
@@ -111,9 +140,9 @@ public class Test {
 
     public static void main(String[] args) throws IOException {
         // TODO 1: decomentați pentru a testa exercițiul 1.
-        // task1();
+        task1();
 
         // TODO 2: decomentați pentru a testa exercițiul 2.
-        // task2();
+        task2();
     }
 }

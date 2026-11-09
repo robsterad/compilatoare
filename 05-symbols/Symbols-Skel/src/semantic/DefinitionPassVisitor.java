@@ -108,6 +108,16 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
         // TODO 3: Verificăm dacă parametrul deja există în scope-ul
         // curent.
+        var id = formalDef.id;
+        var symbol = new IdSymbol(id.getToken().getText());
+
+        if (!currentScope.add(symbol)) {
+            ASTVisitor.error(id.getToken(), id.getToken().getText() + " redefined");
+            return null;
+        }
+
+        id.setSymbol(symbol);
+        id.setScope(currentScope);
 
         return null;
     }
@@ -135,12 +145,27 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
         // TODO 3: Verificăm faptul că o funcție cu același nume nu a mai fost
         // definită până acum.
+        var id = funcDef.id;
+        var functionSymbol = new FunctionSymbol(currentScope, id.getToken().getText());
+
+        if (!currentScope.add(functionSymbol)) {
+            ASTVisitor.error(id.getToken(), id.getToken().getText() + " function redefined");
+            return null;
+        }
+
+        id.setSymbol(functionSymbol);
+        id.setScope(currentScope);
+
+        // Parametrii formali și corpul funcției se află în scope-ul funcției.
+        currentScope = functionSymbol;
 
         for (var formal : funcDef.formalDefs) {
             formal.accept(this);
         }
 
         funcDef.body.accept(this);
+
+        currentScope = functionSymbol.getParent();
 
         return null;
     }
@@ -149,9 +174,12 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
     public Void visit(ASTNode.Block block) {
         // TODO 2: Nu uitați să updatati scope-ul curent înainte să fie parcurs corpul blocului,
         // și să îl restaurati la loc după ce acesta a fost parcurs.
+        currentScope = new DefaultScope(currentScope);
 
         for (var stmt : block.stmts)
             stmt.accept(this);
+
+        currentScope = currentScope.getParent();
 
         return null;
 
@@ -173,6 +201,15 @@ public class DefinitionPassVisitor implements ASTVisitor<Void> {
 
         // TODO 3: Semnalăm eroare dacă există deja variabilă în scope-ul
         // curent.
+        var symbol = new IdSymbol(id.getToken().getText());
+        symbol.isGlobal = globalFlag;
+
+        if (currentScope.add(symbol)) {
+            id.setSymbol(symbol);
+            id.setScope(currentScope);
+        } else {
+            ASTVisitor.error(id.getToken(), id.getToken().getText() + " redefined");
+        }
 
         if (initValue != null)
             initValue.accept(this);
